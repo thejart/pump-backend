@@ -4,7 +4,7 @@ require __DIR__ . '/lib/shit.class.php';
 
 use Twilio\Rest\Client;
 
-class ShitShow extends Shit {
+class WipeCheck extends Shit {
   /** @var array */
   private $alerts = [];
 
@@ -33,16 +33,16 @@ class ShitShow extends Shit {
   }
 }
 
-$shitShow = new ShitShow();
+$wipeCheck = new WipeCheck();
 
-if ($shitShow->shouldTextAlert()) {
-  $client = new Client($shitShow->getAccountSid(), $shitShow->getAuthToken());
+if ($wipeCheck->shouldTextAlert()) {
+  $client = new Client($wipeCheck->getAccountSid(), $wipeCheck->getAuthToken());
 
   $client->messages->create(
-      $shitShow->getTextNumber(),
+      $wipeCheck->getTextNumber(),
       array(
-          'from' => $shitShow->getTwilioNumber(),
-          'body' => $shitShow->getMessage()
+          'from' => $wipeCheck->getTwilioNumber(),
+          'body' => $wipeCheck->getMessage()
       )
   );
 }
