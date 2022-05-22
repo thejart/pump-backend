@@ -1,107 +1,17 @@
 <?php
+require __DIR__ . '/lib/shit.class.php';
 
-class ShitShow {
-  const STARTUP = 1;
-  const PUMPING = 2;
-  const HEALTHCHECK = 3;
-
-  /** @var PDO */
-  protected $pdo;
+class ShitShow extends Shit {
   /** @var int */
   protected $viewWindow;
 
   public function __construct() {
-    list($mysqlDatabase, $mysqlUsername, $mysqlPassword) = $this->setupEnvironment();
-
-    $this->pdo = new PDO("mysql:host=127.0.0.1;dbname=". $mysqlDatabase, $mysqlUsername, $mysqlPassword);
-    $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    parent::__construct();
 
     $this->viewWindow = $this->getRequestParam('days', 7);
   }
-
-  protected function setupEnvironment()
-  {
-      try {
-          $environmentFile = file_get_contents('secrets');
-      } catch (Exception $e) {
-          throw new Exception('Unable to read in environment file :'. $e->getMessage());
-      }
-      return explode("\n", $environmentFile);
-  }
-
-  public function getMostRecentsOfEachType() {
-    $results = [];
-    $types = [self::STARTUP, self::PUMPING, self::HEALTHCHECK];
-
-    foreach ($types as $type) {
-      $query = $this->pdo->prepare("
-        SELECT type, timestamp FROM pump_events
-        WHERE type=:type
-        ORDER BY timestamp DESC
-        LIMIT 1
-      ");
-
-      $query->execute([':type' => $type]);
-      $result = $query->fetchAll(PDO::FETCH_OBJ);
-      $results[$type] = $result[0]->timestamp;
-    }
-
-    return $results;
-  }
-
-  public function getDaysOfRecentEvents() {
-    $query = $this->pdo->prepare("
-      SELECT id, x_value, y_value, z_value, type, timestamp FROM  pump_events
-      WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
-      ORDER BY timestamp
-    ");
-
-    $query->execute();
-    return $query->fetchAll(PDO::FETCH_OBJ);
-  }
-
-  public function getCurrentCalloutCount() {
-    $query = $this->pdo->prepare("
-      SELECT COUNT(*) as count
-      FROM pump_events
-      WHERE timestamp >= (
-        SELECT timestamp
-        FROM pump_events
-        WHERE type=1
-        ORDER BY timestamp DESC
-        LIMIT 1
-      )
-    ");
-
-    $query->execute();
-    return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
-  }
-
-  public function getMaxAbsoluteValue($event) {
-    // Pumping events have a threshold of 5, so arbitrarily setting these event types well below that
-    // creates a visual distinction (in addition to the different colors)
-    if ($event->type == self::STARTUP) {
-      return 2;
-    } elseif ($event->type == self::HEALTHCHECK) {
-      return 1;
-    }
-
-    $maxAbsValue = abs($event->x_value);
-    if (abs($event->y_value) > $maxAbsValue) {
-      $maxAbsValue = abs($event->y_value);
-    }
-    if (abs($event->z_value) > $maxAbsValue) {
-      $maxAbsValue = abs($event->z_value);
-    }
-    return $maxAbsValue;
-  }
-
   public function getViewWindow() {
     return $this->viewWindow;
-  }
-
-  protected function getRequestParam($field, $default = null) {
-    return isset($_REQUEST[$field]) ? $_REQUEST[$field] : $default;
   }
 }
 
