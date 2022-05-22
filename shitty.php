@@ -33,36 +33,16 @@
  *     x=1.83, y=-2.62, z=-2.14, healthcheck=1 === HEALTHCHECK (3)
  **/
 
-class ShitPumper {
-  const STARTUP = 1;
-  const PUMPING = 2;
-  const HEALTHCHECK = 3;
-
-  /** @var PDO */
-  protected $pdo;
-
+class ShitPumper extends Shit {
   protected $xValue;
   protected $yValue;
   protected $zValue;
   protected $type;
 
   public function __construct() {
-    list($mysqlDatabase, $mysqlUsername, $mysqlPassword) = $this->setupEnvironment();
-
-    $this->pdo = new PDO("mysql:host=127.0.0.1;dbname=". $mysqlDatabase, $mysqlUsername, $mysqlPassword);
-    $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    parent::__construct();
 
     $this->parseRequestParams();
-  }
-
-  protected function setupEnvironment()
-  {
-      try {
-          $environmentFile = file_get_contents('secrets');
-      } catch (Exception $e) {
-          throw new Exception('Unable to read in environment file :'. $e->getMessage());
-      }
-      return explode("\n", $environmentFile);
   }
 
   public function processInsertionRequest() {
@@ -84,10 +64,6 @@ class ShitPumper {
     }
 
     return false;
-  }
-
-  protected function getRequestParam($field, $default = null) {
-    return isset($_REQUEST[$field]) ? $_REQUEST[$field] : $default;
   }
 
   protected function parseRequestParams() {
