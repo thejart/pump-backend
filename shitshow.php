@@ -1,4 +1,5 @@
 <?php
+require __DIR__ . '/lib/shit.class.php';
 
 class ShitShow extends Shit {
   /** @var int */

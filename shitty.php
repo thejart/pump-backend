@@ -1,4 +1,6 @@
 <?php
+require __DIR__ . '/lib/shit.class.php';
+
 /**
  * ## HTTP ENDPOINT
  * 1. Parse xyz values, request type & timestamp
