@@ -10,7 +10,8 @@ So you've got yourself an Arduino board to monitor your evacuation pump and load
 1. Get the [pump monitor](https://github.com/thejart/pump-monitor) setup
 2. Setup a webserver with a relational database
 3. Create a table for storing pump events (see below)
-4. Clone this repo in a web directory
+4. Create a secrets file and lock it down (see below)
+5. Clone this repo in a web directory
 
 ---
 ### Table Schema
@@ -28,7 +29,7 @@ CREATE TABLE `pump_events` (
 ```
 
 ### secrets file
-The secrets file contains all the personal data that needs to be kept out of source control. Make sure that it's readable by your webserver's user, but otherwise locked down.
+The secrets file contains all the personal data that needs to be kept out of source control. Make sure that it's readable by your webserver's user, but otherwise locked down (eg. `chown <youruser>:<webuser> secrets && chmod 640 secrets`).
 ```
 <mysql database>
 <mysql username>
