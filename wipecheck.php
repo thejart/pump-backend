@@ -8,6 +8,10 @@ class ShitShow extends Shit {
   /** @var array */
   private $alerts = [];
 
+    public function __construct() {
+        parent::__construct(true);
+    }
+
   public function shouldTextAlert() {
     $this->alerts = [];
 
@@ -32,15 +36,12 @@ class ShitShow extends Shit {
 $shitShow = new ShitShow();
 
 if ($shitShow->shouldTextAlert()) {
-    // TODO: This method shouldn't be public, so do this differently
-  list(,,,$account_sid, $auth_token, $twilio_number, $text_number) = $shitShow->setupEnvironment();
-  $client = new Client($account_sid, $auth_token);
+  $client = new Client($shitShow->getAccountSid(), $shitShow->getAuthToken());
 
   $client->messages->create(
-      // Where to send a text message (your cell phone?)
-      $text_number,
+      $shitShow->getTextNumber(),
       array(
-          'from' => $twilio_number,
+          'from' => $shitShow->getTwilioNumber(),
           'body' => $shitShow->getMessage()
       )
   );

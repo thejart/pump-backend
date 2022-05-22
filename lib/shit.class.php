@@ -12,8 +12,18 @@ class Shit {
     /** @var PDO */
     protected $pdo;
 
-    public function __construct() {
-        list($mysqlDatabase, $mysqlUsername, $mysqlPassword) = $this->setupEnvironment();
+    // Twilio Secrets
+    protected $account_sid;
+    protected $auth_token;
+    protected $twilio_number;
+    protected $text_number;
+
+    public function __construct($shouldParseTwilioSecrets = false) {
+        if ($shouldParseTwilioSecrets) {
+            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->account_sid, $this->auth_token, $this->twilio_number, $this->text_number) = $this->setupEnvironment();
+        } else {
+            list($mysqlDatabase, $mysqlUsername, $mysqlPassword) = $this->setupEnvironment();
+        }
 
         $this->pdo = new PDO("mysql:host=127.0.0.1;dbname=". $mysqlDatabase, $mysqlUsername, $mysqlPassword);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -59,6 +69,23 @@ class Shit {
         return $query->fetchAll(PDO::FETCH_OBJ);
     }
 
+    public function getCurrentCalloutCount() {
+        $query = $this->pdo->prepare("
+          SELECT COUNT(*) as count
+          FROM pump_events
+          WHERE timestamp >= (
+            SELECT timestamp
+            FROM pump_events
+            WHERE type=1
+            ORDER BY timestamp DESC
+            LIMIT 1
+          )
+        ");
+
+        $query->execute();
+        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
+    }
+
     protected function hasHadRecentHealthCheck() {
         $query = $this->pdo->prepare("
       SELECT COUNT(*) AS count
@@ -83,23 +110,6 @@ class Shit {
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
-    public function getCurrentCalloutCount() {
-        $query = $this->pdo->prepare("
-          SELECT COUNT(*) as count
-          FROM pump_events
-          WHERE timestamp >= (
-            SELECT timestamp
-            FROM pump_events
-            WHERE type=1
-            ORDER BY timestamp DESC
-            LIMIT 1
-          )
-        ");
-
-        $query->execute();
-        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
-    }
-
     public function getMaxAbsoluteValue($event) {
         // Pumping events have a threshold of 5, so arbitrarily setting these event types well below that
         // creates a visual distinction (in addition to the different colors)
@@ -117,6 +127,22 @@ class Shit {
             $maxAbsValue = abs($event->z_value);
         }
         return $maxAbsValue;
+    }
+
+    public function getAccountSid() {
+        return $this->account_sid;
+    }
+
+    public function getAuthToken() {
+        return $this->auth_token;
+    }
+
+    public function getTwilioNumber() {
+        return $this->twilio_number;
+    }
+
+    public function getTextNumber() {
+        return $this->text_number;
     }
 
     protected function getRequestParam($field, $default = null) {
