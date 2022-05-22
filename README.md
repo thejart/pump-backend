@@ -24,7 +24,7 @@ CREATE TABLE `pump_events` (
   `timestamp` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `timestamp` (`timestamp`)
-) ENGINE=InnoDB AUTO_INCREMENT=137 DEFAULT CHARSET=utf8mb4
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 ```
 
 ### secrets file
