@@ -3,7 +3,7 @@ So you've got yourself an Arduino board to monitor your evacuation pump and load
 
 ## Scripts Overview
 - `shitty.php` This is the endpoint that the pump monitor's HTTP request will hit. It's responsible for parsing out the query params, determining the type of request (startup, pumping or healthcheck) and inserting a row into a database table.
-- `shitshow.php` This is an endpoint used to display recent requests in a graph format.
+- `shitshow.php` This is an endpoint used to display recent requests in a graph format (see below for more info).
 - `wipecheck.php` This is an optional script that should be cron'd which will monitor recent usage and send a text message via Twilio (Note: You'll need a valid account, which they offer for free) if any thresholds have been met.
 
 ## Getting Started
@@ -38,3 +38,8 @@ The secrets file contains all the personal data that needs to be kept out of sou
 <twilio number>
 <SMS number>
 ```
+
+### shitshow.php / Chart.js
+The shitshow.php endpoint uses Chart.js to display recent events. An optional GET parameter, `days` can be added to change the view of the chart.
+
+<img width="799" alt="image" src="https://user-images.githubusercontent.com/1659844/169703906-0fe0fb0c-fb6f-4f5b-80de-666e4190048d.png">
