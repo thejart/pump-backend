@@ -28,13 +28,13 @@ $recentEpoch = $shitShow->getMostRecentsOfEachType()[ShitShow::STARTUP];
 $calloutCount = $shitShow->getCurrentCalloutCount();
 
 $backgroundOptions = [
-  ShitShow::STARTUP => "rgba(75, 192, 192, 0.2)",     // green
-  ShitShow::PUMPING => "rgba(54, 162, 235, 0.2)",     // blue
-  ShitShow::HEALTHCHECK => "rgba(201, 203, 207, 0.2)" // grey
+  ShitShow::STARTUP => "rgba(54, 162, 235, 1)",       // blue
+  ShitShow::PUMPING => "rgba(139, 69, 19, 0.4)",      // brown
+  ShitShow::HEALTHCHECK => "rgba(201, 203, 207, 0.4)" // grey
 ];
 $borderOptions = [
-  ShitShow::STARTUP => "rgb(75, 192, 192)",     // green
-  ShitShow::PUMPING => "rgb(54, 162, 235)",     // blue
+  ShitShow::STARTUP => "rgb(54, 162, 235)",     // blue
+  ShitShow::PUMPING => "rgb(139, 69, 19)",      // brown
   ShitShow::HEALTHCHECK => "rgb(201, 203, 207)" // grey
 ];
 
@@ -77,15 +77,15 @@ foreach ($events as $event) {
             label: 'Startup Signals',
             data: startupData,
             backgroundColor: "<?php echo $backgroundOptions[ShitShow::STARTUP]; ?>",
-            backgroundColor: "<?php echo $borderOptions[ShitShow::STARTUP]; ?>",
+            borderColor: "<?php echo $borderOptions[ShitShow::STARTUP]; ?>",
             borderWidth: 1,
-            barThickness: 15,
+            barThickness: 5,
           },
           {
             label: 'Pumping Signals',
             data: pumpingData,
             backgroundColor: "<?php echo $backgroundOptions[ShitShow::PUMPING]; ?>",
-            backgroundColor: "<?php echo $borderOptions[ShitShow::PUMPING]; ?>",
+            borderColor: "<?php echo $borderOptions[ShitShow::PUMPING]; ?>",
             borderWidth: 1,
             barThickness: 10,
           },
@@ -93,9 +93,9 @@ foreach ($events as $event) {
             label: 'Healthcheck Signals',
             data: healthcheckData,
             backgroundColor: "<?php echo $backgroundOptions[ShitShow::HEALTHCHECK]; ?>",
-            backgroundColor: "<?php echo $borderOptions[ShitShow::HEALTHCHECK]; ?>",
+            borderColor: "<?php echo $borderOptions[ShitShow::HEALTHCHECK]; ?>",
             borderWidth: 1,
-            barThickness: 30,
+            barThickness: 20,
           },
         ]
       };
