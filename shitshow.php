@@ -2,12 +2,53 @@
 require __DIR__ . '/lib/shit.class.php';
 
 class ShitShow extends Shit {
+    const BACKGROUND_OPTIONS = [
+        self::STARTUP => "rgba(54, 162, 235, 1)",       // blue
+        self::PUMPING => "rgba(139, 69, 19, 0.4)",      // brown
+        self::HEALTHCHECK => "rgba(201, 203, 207, 0.2)" // grey
+    ];
+    const BORDER_OPTIONS = [
+        self::STARTUP => "rgb(54, 162, 235)",     // blue
+        self::PUMPING => "rgb(139, 69, 19)",      // brown
+        self::HEALTHCHECK => "rgb(201, 203, 207)" // grey
+    ];
+
     /** @var int */
     protected $viewWindow;
 
     public function __construct() {
         parent::__construct();
         $this->viewWindow = $this->getRequestParam('days', 7);
+    }
+
+    public function getChartData() {
+        $startupData = [];
+        $pumpingData = [];
+        $healthcheckData = [];
+
+        foreach ($this->getXDaysOfRecentEvents() as $event) {
+            $graphedDatum = new stdClass();
+            $graphedDatum->x = $event->timestamp;
+            $graphedDatum->y = $this->getMaxAbsoluteValue($event);
+
+            if ($event->type == ShitShow::STARTUP) {
+                $startupData[] = $graphedDatum;
+            } elseif ($event->type == ShitShow::PUMPING) {
+                $pumpingData[] = $graphedDatum;
+            } else {
+                $healthcheckData[] = $graphedDatum;
+            }
+        }
+
+        return [$startupData, $pumpingData, $healthcheckData];
+    }
+
+    public function getBackgroundColor($type) {
+        return self::BACKGROUND_OPTIONS[$type];
+    }
+
+    public function getBorderColor($type) {
+        return self::BORDER_OPTIONS[$type];
     }
 
     public function getViewWindow() {
@@ -23,37 +64,9 @@ class ShitShow extends Shit {
  *   - Pumping hasn't happened in X days(?)
  */
 $shitShow = new ShitShow();
-$events = $shitShow->getXDaysOfRecentEvents();
 $recentEpoch = $shitShow->getMostRecentEventsOfEachType()[ShitShow::STARTUP];
 $calloutCount = $shitShow->getCurrentCalloutCount();
-
-$backgroundOptions = [
-    ShitShow::STARTUP => "rgba(54, 162, 235, 1)",       // blue
-    ShitShow::PUMPING => "rgba(139, 69, 19, 0.4)",      // brown
-    ShitShow::HEALTHCHECK => "rgba(201, 203, 207, 0.2)" // grey
-];
-$borderOptions = [
-    ShitShow::STARTUP => "rgb(54, 162, 235)",     // blue
-    ShitShow::PUMPING => "rgb(139, 69, 19)",      // brown
-    ShitShow::HEALTHCHECK => "rgb(201, 203, 207)" // grey
-];
-
-$startupData = [];
-$pumpingData = [];
-$healthcheckData = [];
-foreach ($events as $event) {
-    $graphedDatum = new stdClass();
-    $graphedDatum->x = $event->timestamp;
-    $graphedDatum->y = $shitShow->getMaxAbsoluteValue($event);
-
-    if ($event->type == ShitShow::STARTUP) {
-        $startupData[] = $graphedDatum;
-    } elseif ($event->type == ShitShow::PUMPING) {
-        $pumpingData[] = $graphedDatum;
-    } else {
-        $healthcheckData[] = $graphedDatum;
-    }
-}
+list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
 ?>
 
 <html>
@@ -76,24 +89,24 @@ foreach ($events as $event) {
           {
             label: 'Startup Signals',
             data: startupData,
-            backgroundColor: "<?php echo $backgroundOptions[ShitShow::STARTUP]; ?>",
-            borderColor: "<?php echo $borderOptions[ShitShow::STARTUP]; ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::STARTUP); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(Shit::STARTUP); ?>",
             borderWidth: 1,
             barThickness: 5,
           },
           {
             label: 'Pumping Signals',
             data: pumpingData,
-            backgroundColor: "<?php echo $backgroundOptions[ShitShow::PUMPING]; ?>",
-            borderColor: "<?php echo $borderOptions[ShitShow::PUMPING]; ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::PUMPING); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(Shit::PUMPING); ?>",
             borderWidth: 1,
             barThickness: 10,
           },
           {
             label: 'Healthcheck Signals',
             data: healthcheckData,
-            backgroundColor: "<?php echo $backgroundOptions[ShitShow::HEALTHCHECK]; ?>",
-            borderColor: "<?php echo $borderOptions[ShitShow::HEALTHCHECK]; ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::HEALTHCHECK); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(Shit::HEALTHCHECK); ?>",
             borderWidth: 1,
             barThickness: 20,
           },
