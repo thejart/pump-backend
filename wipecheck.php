@@ -40,8 +40,8 @@ if ($wipeCheck->shouldTextAlert()) {
 
     $client->messages->create(
         $wipeCheck->getTextNumber(), [
-          'from' => $wipeCheck->getTwilioNumber(),
-          'body' => $wipeCheck->getMessage()
+            'from' => $wipeCheck->getTwilioNumber(),
+            'body' => $wipeCheck->getMessage()
         ]
     );
 }

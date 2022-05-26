@@ -38,7 +38,28 @@ class Shit {
         return explode("\n", $environmentFile);
     }
 
-    public function getMostRecentsOfEachType() {
+    public function insertPumpEvent() {
+        $query = $this->pdo->prepare("
+            INSERT INTO pump_events
+            (x_value, y_value, z_value, type, timestamp)
+            values (:x_value, :y_value, :z_value, :type, now())
+        ");
+
+        $query->execute([
+            ':x_value' => $this->xValue,
+            ':y_value' => $this->yValue,
+            ':z_value' => $this->zValue,
+            ':type' => $this->type
+        ]);
+
+        if ($query->rowCount()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getMostRecentEventsOfEachType() {
         $results = [];
         $types = [self::STARTUP, self::PUMPING, self::HEALTHCHECK];
 
@@ -58,7 +79,7 @@ class Shit {
         return $results;
     }
 
-    public function getDaysOfRecentEvents() {
+    public function getXDaysOfRecentEvents() {
         $query = $this->pdo->prepare("
             SELECT id, x_value, y_value, z_value, type, timestamp FROM  pump_events
             WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
@@ -111,8 +132,7 @@ class Shit {
     }
 
     public function getMaxAbsoluteValue($event) {
-        // Pumping events have a threshold of 5, so arbitrarily setting these event types well below that
-        // creates a visual distinction (in addition to the different colors)
+        // Startup and Healthcheck events have their gryoscopic data overwritten for visual aesthetic
         if ($event->type == self::STARTUP) {
             return 11;
         } elseif ($event->type == self::HEALTHCHECK) {

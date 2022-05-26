@@ -23,8 +23,8 @@ class ShitShow extends Shit {
  *   - Pumping hasn't happened in X days(?)
  */
 $shitShow = new ShitShow();
-$events = $shitShow->getDaysOfRecentEvents();
-$recentEpoch = $shitShow->getMostRecentsOfEachType()[ShitShow::STARTUP];
+$events = $shitShow->getXDaysOfRecentEvents();
+$recentEpoch = $shitShow->getMostRecentEventsOfEachType()[ShitShow::STARTUP];
 $calloutCount = $shitShow->getCurrentCalloutCount();
 
 $backgroundOptions = [
