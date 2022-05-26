@@ -60,9 +60,9 @@ class Shit {
 
     public function getDaysOfRecentEvents() {
         $query = $this->pdo->prepare("
-          SELECT id, x_value, y_value, z_value, type, timestamp FROM  pump_events
-          WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
-          ORDER BY timestamp
+            SELECT id, x_value, y_value, z_value, type, timestamp FROM  pump_events
+            WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
+            ORDER BY timestamp
         ");
 
         $query->execute();
@@ -71,15 +71,15 @@ class Shit {
 
     public function getCurrentCalloutCount() {
         $query = $this->pdo->prepare("
-          SELECT COUNT(*) as count
-          FROM pump_events
-          WHERE timestamp >= (
-            SELECT timestamp
+            SELECT COUNT(*) as count
             FROM pump_events
-            WHERE type=1
-            ORDER BY timestamp DESC
-            LIMIT 1
-          )
+            WHERE timestamp >= (
+                SELECT timestamp
+                FROM pump_events
+                WHERE type=1
+                ORDER BY timestamp DESC
+                LIMIT 1
+            )
         ");
 
         $query->execute();
@@ -88,11 +88,11 @@ class Shit {
 
     protected function hasHadRecentHealthCheck() {
         $query = $this->pdo->prepare("
-      SELECT COUNT(*) AS count
-      FROM pump_events
-      WHERE type=:type
-      AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::HEALTHCHECK_THRESHOLD . " HOUR) 
-    ");
+            SELECT COUNT(*) AS count
+            FROM pump_events
+            WHERE type=:type
+            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::HEALTHCHECK_THRESHOLD . " HOUR)
+        ");
 
         $query->execute([':type' => self::HEALTHCHECK]);
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
@@ -100,11 +100,11 @@ class Shit {
 
     protected function hasHadRecentPumping() {
         $query = $this->pdo->prepare("
-      SELECT COUNT(*) AS count
-      FROM pump_events
-      WHERE type=:type
-      AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::PUMPING_THRESHOLD . " DAY) 
-    ");
+            SELECT COUNT(*) AS count
+            FROM pump_events
+            WHERE type=:type
+            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::PUMPING_THRESHOLD . " DAY)
+        ");
 
         $query->execute([':type' => self::PUMPING]);
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;

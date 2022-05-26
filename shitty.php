@@ -36,37 +36,37 @@ require __DIR__ . '/lib/shit.class.php';
  **/
 
 class ShitPumper extends Shit {
-  protected $xValue;
-  protected $yValue;
-  protected $zValue;
-  protected $type;
+    protected $xValue;
+    protected $yValue;
+    protected $zValue;
+    protected $type;
 
-  public function __construct() {
-    parent::__construct();
+    public function __construct() {
+        parent::__construct();
 
-    $this->parseRequestParams();
-  }
-
-  public function processInsertionRequest() {
-    $query = $this->pdo->prepare("
-      INSERT INTO pump_events
-      (x_value, y_value, z_value, type, timestamp)
-      values (:x_value, :y_value, :z_value, :type, now())
-    ");
-
-    $query->execute([
-      ':x_value' => $this->xValue,
-      ':y_value' => $this->yValue,
-      ':z_value' => $this->zValue,
-      ':type' => $this->type
-    ]);
-
-    if ($query->rowCount()) {
-      return true;
+        $this->parseRequestParams();
     }
 
-    return false;
-  }
+    public function processInsertionRequest() {
+        $query = $this->pdo->prepare("
+            INSERT INTO pump_events
+            (x_value, y_value, z_value, type, timestamp)
+            values (:x_value, :y_value, :z_value, :type, now())
+        ");
+
+        $query->execute([
+            ':x_value' => $this->xValue,
+            ':y_value' => $this->yValue,
+            ':z_value' => $this->zValue,
+            ':type' => $this->type
+        ]);
+
+        if ($query->rowCount()) {
+            return true;
+        }
+
+        return false;
+    }
 
   protected function parseRequestParams() {
     $this->xValue = (float)$this->getRequestParam('x');
@@ -74,21 +74,22 @@ class ShitPumper extends Shit {
     $this->zValue = (float)$this->getRequestParam('z');
 
     if ($this->getRequestParam('shitstorm')) {
-      $this->type = self::PUMPING;
+        $this->type = self::PUMPING;
     //} elseif ((bool)$this->getRequestParam('healthcheck', false)) {
     } else {
-      if ($this->xValue > -0.009 && $this->xValue < 0.001 && $this->yValue > -0.009 && $this->yValue < 0.001 && $this->zValue > -0.009 && $this->zValue < 0.001) {
-        $this->type = self::STARTUP;
-      } else {
-        $this->type = self::HEALTHCHECK;
-      }
+        if ($this->xValue > -0.009 && $this->xValue < 0.001 && $this->yValue > -0.009 && $this->yValue < 0.001 && $this->zValue > -0.009 && $this->zValue < 0.001) {
+            $this->type = self::STARTUP;
+        } else {
+            $this->type = self::HEALTHCHECK;
+        }
     }
   }
 }
 
 $shitpumper = new ShitPumper();
+
 if ($shitpumper->processInsertionRequest()) {
-  echo ":thumbsup:";
+    echo ":thumbsup:";
 } else {
-  echo ":poop:";
+    echo ":poop:";
 }
