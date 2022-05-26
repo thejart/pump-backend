@@ -114,7 +114,7 @@ class Shit {
         // Pumping events have a threshold of 5, so arbitrarily setting these event types well below that
         // creates a visual distinction (in addition to the different colors)
         if ($event->type == self::STARTUP) {
-            return 2;
+            return 11;
         } elseif ($event->type == self::HEALTHCHECK) {
             return 1;
         }
