@@ -3,14 +3,14 @@ require __DIR__ . '/lib/shit.class.php';
 
 class ShitShow extends Shit {
     const BACKGROUND_OPTIONS = [
-        ShitShow::STARTUP => "rgba(54, 162, 235, 1)",       // blue
-        ShitShow::PUMPING => "rgba(139, 69, 19, 0.4)",      // brown
-        ShitShow::HEALTHCHECK => "rgba(201, 203, 207, 0.2)" // grey
+        self::STARTUP => "rgba(54, 162, 235, 1)",       // blue
+        self::PUMPING => "rgba(139, 69, 19, 0.4)",      // brown
+        self::HEALTHCHECK => "rgba(201, 203, 207, 0.2)" // grey
     ];
     const BORDER_OPTIONS = [
-        ShitShow::STARTUP => "rgb(54, 162, 235)",     // blue
-        ShitShow::PUMPING => "rgb(139, 69, 19)",      // brown
-        ShitShow::HEALTHCHECK => "rgb(201, 203, 207)" // grey
+        self::STARTUP => "rgb(54, 162, 235)",     // blue
+        self::PUMPING => "rgb(139, 69, 19)",      // brown
+        self::HEALTHCHECK => "rgb(201, 203, 207)" // grey
     ];
 
     /** @var int */
@@ -89,24 +89,24 @@ list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
           {
             label: 'Startup Signals',
             data: startupData,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor([ShitShow::STARTUP]); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor([ShitShow::STARTUP]); ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor([Shit::STARTUP]); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor([Shit::STARTUP]); ?>",
             borderWidth: 1,
             barThickness: 5,
           },
           {
             label: 'Pumping Signals',
             data: pumpingData,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor([ShitShow::PUMPING]); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor([ShitShow::PUMPING]); ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor([Shit::PUMPING]); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor([Shit::PUMPING]); ?>",
             borderWidth: 1,
             barThickness: 10,
           },
           {
             label: 'Healthcheck Signals',
             data: healthcheckData,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor([ShitShow::HEALTHCHECK]); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor([ShitShow::HEALTHCHECK]); ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor([Shit::HEALTHCHECK]); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor([Shit::HEALTHCHECK]); ?>",
             borderWidth: 1,
             barThickness: 20,
           },
