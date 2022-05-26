@@ -70,17 +70,6 @@ class Shit {
         return $results;
     }
 
-    public function getXDaysOfRecentEvents() {
-        $query = $this->pdo->prepare("
-            SELECT id, x_value, y_value, z_value, type, timestamp FROM  pump_events
-            WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
-            ORDER BY timestamp
-        ");
-
-        $query->execute();
-        return $query->fetchAll(PDO::FETCH_OBJ);
-    }
-
     public function getCurrentCalloutCount() {
         $query = $this->pdo->prepare("
             SELECT COUNT(*) as count
@@ -98,7 +87,34 @@ class Shit {
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
-    public function getMaxAbsoluteValue($event) {
+    public function getAccountSid() {
+        return $this->account_sid;
+    }
+
+    public function getAuthToken() {
+        return $this->auth_token;
+    }
+
+    public function getTwilioNumber() {
+        return $this->twilio_number;
+    }
+
+    public function getTextNumber() {
+        return $this->text_number;
+    }
+
+    protected function getXDaysOfRecentEvents() {
+        $query = $this->pdo->prepare("
+            SELECT id, x_value, y_value, z_value, type, timestamp FROM  pump_events
+            WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
+            ORDER BY timestamp
+        ");
+
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    protected function getMaxAbsoluteValue($event) {
         // Startup and Healthcheck events have their gryoscopic data overwritten for visual aesthetic
         if ($event->type == self::STARTUP) {
             return 11;
@@ -114,22 +130,6 @@ class Shit {
             $maxAbsValue = abs($event->z_value);
         }
         return $maxAbsValue;
-    }
-
-    public function getAccountSid() {
-        return $this->account_sid;
-    }
-
-    public function getAuthToken() {
-        return $this->auth_token;
-    }
-
-    public function getTwilioNumber() {
-        return $this->twilio_number;
-    }
-
-    public function getTextNumber() {
-        return $this->text_number;
     }
 
     protected function hasHadRecentHealthCheck() {
