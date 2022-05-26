@@ -42,16 +42,16 @@ $startupData = [];
 $pumpingData = [];
 $healthcheckData = [];
 foreach ($events as $event) {
-    $eventObject = new stdClass();
-    $eventObject->x = $event->timestamp;
-    $eventObject->y = $shitShow->getMaxAbsoluteValue($event);
+    $graphedDatum = new stdClass();
+    $graphedDatum->x = $event->timestamp;
+    $graphedDatum->y = $shitShow->getMaxAbsoluteValue($event);
 
     if ($event->type == ShitShow::STARTUP) {
-        $startupData[] = $eventObject;
+        $startupData[] = $graphedDatum;
     } elseif ($event->type == ShitShow::PUMPING) {
-        $pumpingData[] = $eventObject;
+        $pumpingData[] = $graphedDatum;
     } else {
-        $healthcheckData[] = $eventObject;
+        $healthcheckData[] = $graphedDatum;
     }
 }
 ?>
@@ -64,8 +64,8 @@ foreach ($events as $event) {
     <script type='text/javascript'>
       const hourFormat = 'MM/DD HH:mm';
       const dateFormat = 'ddd, MMM DD';
-      const recentEpoch = moment("<?php echo $recentEpoch; ?>").fromNow();
-      const title = 'Pump Events (Viewing <?php echo $shitShow->getViewWindow(); ?> days, Restarted ' + recentEpoch + ', Current request count: ' + <?php echo $calloutCount?> + ')';
+      const recentEpochString = moment("<?php echo $recentEpoch; ?>").fromNow();
+      const title = 'Pump Events (Viewing <?php echo $shitShow->getViewWindow(); ?> days, Restarted ' + recentEpochString + ', Current request count: ' + <?php echo $calloutCount?> + ')';
 
       const startupData = <?php echo json_encode($startupData); ?>;
       const pumpingData = <?php echo json_encode($pumpingData); ?>;
