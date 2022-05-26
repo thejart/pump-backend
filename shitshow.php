@@ -2,17 +2,17 @@
 require __DIR__ . '/lib/shit.class.php';
 
 class ShitShow extends Shit {
-  /** @var int */
-  protected $viewWindow;
+    /** @var int */
+    protected $viewWindow;
 
-  public function __construct() {
-    parent::__construct();
+    public function __construct() {
+        parent::__construct();
+        $this->viewWindow = $this->getRequestParam('days', 7);
+    }
 
-    $this->viewWindow = $this->getRequestParam('days', 7);
-  }
-  public function getViewWindow() {
-    return $this->viewWindow;
-  }
+    public function getViewWindow() {
+        return $this->viewWindow;
+    }
 }
 
 /**
@@ -28,31 +28,31 @@ $recentEpoch = $shitShow->getMostRecentsOfEachType()[ShitShow::STARTUP];
 $calloutCount = $shitShow->getCurrentCalloutCount();
 
 $backgroundOptions = [
-  ShitShow::STARTUP => "rgba(54, 162, 235, 1)",       // blue
-  ShitShow::PUMPING => "rgba(139, 69, 19, 0.4)",      // brown
-  ShitShow::HEALTHCHECK => "rgba(201, 203, 207, 0.4)" // grey
+    ShitShow::STARTUP => "rgba(54, 162, 235, 1)",       // blue
+    ShitShow::PUMPING => "rgba(139, 69, 19, 0.4)",      // brown
+    ShitShow::HEALTHCHECK => "rgba(201, 203, 207, 0.2)" // grey
 ];
 $borderOptions = [
-  ShitShow::STARTUP => "rgb(54, 162, 235)",     // blue
-  ShitShow::PUMPING => "rgb(139, 69, 19)",      // brown
-  ShitShow::HEALTHCHECK => "rgb(201, 203, 207)" // grey
+    ShitShow::STARTUP => "rgb(54, 162, 235)",     // blue
+    ShitShow::PUMPING => "rgb(139, 69, 19)",      // brown
+    ShitShow::HEALTHCHECK => "rgb(201, 203, 207)" // grey
 ];
 
 $startupData = [];
 $pumpingData = [];
 $healthcheckData = [];
 foreach ($events as $event) {
-  $eventObject = new stdClass();
-  $eventObject->x = $event->timestamp;
-  $eventObject->y = $shitShow->getMaxAbsoluteValue($event);
+    $eventObject = new stdClass();
+    $eventObject->x = $event->timestamp;
+    $eventObject->y = $shitShow->getMaxAbsoluteValue($event);
 
-  if ($event->type == ShitShow::STARTUP) {
-    $startupData[] = $eventObject;
-  } elseif ($event->type == ShitShow::PUMPING) {
-    $pumpingData[] = $eventObject;
-  } else {
-    $healthcheckData[] = $eventObject;
-  }
+    if ($event->type == ShitShow::STARTUP) {
+        $startupData[] = $eventObject;
+    } elseif ($event->type == ShitShow::PUMPING) {
+        $pumpingData[] = $eventObject;
+    } else {
+        $healthcheckData[] = $eventObject;
+    }
 }
 ?>
 
