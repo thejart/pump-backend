@@ -34,7 +34,6 @@ class WipeCheck extends Shit {
 }
 
 $wipeCheck = new WipeCheck();
-
 if ($wipeCheck->shouldTextAlert()) {
     $client = new Client($wipeCheck->getAccountSid(), $wipeCheck->getAuthToken());
 

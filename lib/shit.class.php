@@ -10,13 +10,13 @@ class Shit {
     const PUMPING_THRESHOLD = 3;      // days (i.e. there should be a pumping event every 3 days under normal circumstances)
 
     /** @var PDO */
-    protected $pdo;
+    private $pdo;
 
     // Twilio Secrets
-    protected $account_sid;
-    protected $auth_token;
-    protected $twilio_number;
-    protected $text_number;
+    private $account_sid;
+    private $auth_token;
+    private $twilio_number;
+    private $text_number;
 
     public function __construct($shouldParseTwilioSecrets = false) {
         if ($shouldParseTwilioSecrets) {
@@ -27,15 +27,6 @@ class Shit {
 
         $this->pdo = new PDO("mysql:host=127.0.0.1;dbname=". $mysqlDatabase, $mysqlUsername, $mysqlPassword);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    }
-
-    public function setupEnvironment() {
-        try {
-            $environmentFile = file_get_contents('secrets');
-        } catch (Exception $e) {
-            throw new Exception('Unable to read in environment file :'. $e->getMessage());
-        }
-        return explode("\n", $environmentFile);
     }
 
     public function insertPumpEvent() {
@@ -107,30 +98,6 @@ class Shit {
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
-    protected function hasHadRecentHealthCheck() {
-        $query = $this->pdo->prepare("
-            SELECT COUNT(*) AS count
-            FROM pump_events
-            WHERE type=:type
-            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::HEALTHCHECK_THRESHOLD . " HOUR)
-        ");
-
-        $query->execute([':type' => self::HEALTHCHECK]);
-        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
-    }
-
-    protected function hasHadRecentPumping() {
-        $query = $this->pdo->prepare("
-            SELECT COUNT(*) AS count
-            FROM pump_events
-            WHERE type=:type
-            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::PUMPING_THRESHOLD . " DAY)
-        ");
-
-        $query->execute([':type' => self::PUMPING]);
-        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
-    }
-
     public function getMaxAbsoluteValue($event) {
         // Startup and Healthcheck events have their gryoscopic data overwritten for visual aesthetic
         if ($event->type == self::STARTUP) {
@@ -165,7 +132,40 @@ class Shit {
         return $this->text_number;
     }
 
+    protected function hasHadRecentHealthCheck() {
+        $query = $this->pdo->prepare("
+            SELECT COUNT(*) AS count
+            FROM pump_events
+            WHERE type=:type
+            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::HEALTHCHECK_THRESHOLD . " HOUR)
+        ");
+
+        $query->execute([':type' => self::HEALTHCHECK]);
+        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
+    }
+
+    protected function hasHadRecentPumping() {
+        $query = $this->pdo->prepare("
+            SELECT COUNT(*) AS count
+            FROM pump_events
+            WHERE type=:type
+            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::PUMPING_THRESHOLD . " DAY)
+        ");
+
+        $query->execute([':type' => self::PUMPING]);
+        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
+    }
+
     protected function getRequestParam($field, $default = null) {
         return isset($_REQUEST[$field]) ? $_REQUEST[$field] : $default;
+    }
+
+    private function setupEnvironment() {
+        try {
+            $environmentFile = file_get_contents('secrets');
+        } catch (Exception $e) {
+            throw new Exception('Unable to read in environment file :'. $e->getMessage());
+        }
+        return explode("\n", $environmentFile);
     }
 }
