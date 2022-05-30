@@ -43,4 +43,4 @@ The secrets file contains all the personal data that needs to be kept out of sou
 ### shitshow.php / Chart.js
 The shitshow.php endpoint uses Chart.js to display recent events. An optional GET parameter, `days` can be added to change the view of the chart.
 
-<img width="1258" alt="image" src="https://user-images.githubusercontent.com/1659844/170408225-adfcbccb-009b-48ec-8805-438a9851caed.png">
+<img width="995" alt="image" src="https://user-images.githubusercontent.com/1659844/171009829-07affab9-a130-4471-92c3-644c3c40cca6.png">
