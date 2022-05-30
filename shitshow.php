@@ -2,14 +2,19 @@
 require __DIR__ . '/lib/shit.class.php';
 
 class ShitShow extends Shit {
+    const FIFTEEN_MINUTES = 900;
+    const THREE_MINUTES = 180;
+
     const BACKGROUND_OPTIONS = [
         self::STARTUP => "rgba(54, 162, 235, 1)",       // blue
         self::PUMPING => "rgba(139, 69, 19, 0.4)",      // brown
+        self::WASHING => "rgba(97, 148, 49, 0.4)",      // green
         self::HEALTHCHECK => "rgba(201, 203, 207, 0.2)" // grey
     ];
     const BORDER_OPTIONS = [
         self::STARTUP => "rgb(54, 162, 235)",     // blue
         self::PUMPING => "rgb(139, 69, 19)",      // brown
+        self::WASHING => "rgb(97, 148, 49)",      // green
         self::HEALTHCHECK => "rgb(201, 203, 207)" // grey
     ];
 
@@ -54,6 +59,37 @@ class ShitShow extends Shit {
     public function getViewWindow() {
         return $this->viewWindow;
     }
+
+    public function deduceWashingMachineEvents($events) {
+        $skipEventCounter = 0;
+        $pumpingEvents = [];
+        $washingEvents = [];
+
+        foreach ($events as $i => $event) {
+            if ($skipEventCounter) {
+                $skipEventCounter--;
+                continue;
+            }
+
+            if (!$events[$i+2]) {
+                $pumpingEvents[] = $event;
+                continue;
+            }
+
+            // if event[i+2] is within 15 minutes of event[i] AND event[i+1] is within 3 minutes of event[i],
+            // we probably have a washing machine event
+            if ((strtotime($events[$i+2]->x) - strtotime($event->x)) <= self::FIFTEEN_MINUTES) {
+                if ((strtotime($events[$i+1]->x) - strtotime($event->x)) <= self::THREE_MINUTES) {
+                    $washingEvents[] = $event;
+                    $skipEventCounter = 2;
+                }
+            } else {
+                $pumpingEvents[] = $event;
+            }
+        }
+
+        return [$pumpingEvents, $washingEvents];
+    }
 }
 
 /**
@@ -67,6 +103,7 @@ $shitShow = new ShitShow();
 $recentEpoch = $shitShow->getMostRecentEventsOfEachType()[ShitShow::STARTUP];
 $calloutCount = $shitShow->getCurrentCalloutCount();
 list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
+list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachineEvents($pumpingData);
 ?>
 
 <html>
@@ -84,6 +121,9 @@ list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
       const pumpingData = <?php echo json_encode($pumpingData); ?>;
       const healthcheckData = <?php echo json_encode($healthcheckData); ?>;
 
+      const deducedPumpingData = <?php echo json_encode($deducedPumpingData); ?>;
+      const deducedWashingData = <?php echo json_encode($deducedWashingData); ?>;
+
       const data = {
         datasets: [
           {
@@ -96,9 +136,17 @@ list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
           },
           {
             label: 'Pumping Signals',
-            data: pumpingData,
+            data: deducedPumpingData,
             backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::PUMPING); ?>",
             borderColor: "<?php echo $shitShow->getBorderColor(Shit::PUMPING); ?>",
+            borderWidth: 1,
+            barThickness: 10,
+          },
+          {
+            label: 'Washing Machine Signals',
+            data: deducedWashingData,
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::WASHING); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(Shit::WASHING); ?>",
             borderWidth: 1,
             barThickness: 10,
           },

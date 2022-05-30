@@ -4,6 +4,7 @@ class Shit {
     const STARTUP = 1;
     const PUMPING = 2;
     const HEALTHCHECK = 3;
+    const WASHING = 4;
 
     const CALLOUT_LIMIT = 250;        // the nano 33 iot seems to crap out around 300 HTTP callouts
     const HEALTHCHECK_THRESHOLD = 13; // hours (i.e. the healthcheck should occur every 12 hours, plus some wiggle room)
