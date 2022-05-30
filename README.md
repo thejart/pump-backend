@@ -18,9 +18,9 @@ So you've got yourself an Arduino board to monitor your evacuation pump and load
 ```
 CREATE TABLE `pump_events` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `x_value` double(3,2) NOT NULL,
-  `y_value` double(3,2) NOT NULL,
-  `z_value` double(3,2) NOT NULL,
+  `x_value` double(4,2) NOT NULL,
+  `y_value` double(4,2) NOT NULL,
+  `z_value` double(4,2) NOT NULL,
   `type` int(11) NOT NULL,
   `timestamp` datetime NOT NULL,
   PRIMARY KEY (`id`),
