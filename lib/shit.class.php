@@ -1,9 +1,10 @@
 <?php
 
 class Shit {
-    const STARTUP = 1;
-    const PUMPING = 2;
-    const HEALTHCHECK = 3;
+    const EVENT_TYPE_STARTUP = 1;
+    const EVENT_TYPE_PUMPING = 2;
+    const EVENT_TYPE_HEALTHCHECK = 3;
+    const EVENT_TYPE_WASHING_MACHINE = 4;
 
     const CALLOUT_LIMIT = 250;        // the nano 33 iot seems to crap out around 300 HTTP callouts
     const HEALTHCHECK_THRESHOLD = 13; // hours (i.e. the healthcheck should occur every 12 hours, plus some wiggle room)
@@ -52,7 +53,7 @@ class Shit {
 
     public function getMostRecentEventsOfEachType() {
         $results = [];
-        $types = [self::STARTUP, self::PUMPING, self::HEALTHCHECK];
+        $types = [self::EVENT_TYPE_STARTUP, self::EVENT_TYPE_PUMPING, self::EVENT_TYPE_HEALTHCHECK];
 
         foreach ($types as $type) {
             $query = $this->pdo->prepare("
@@ -105,7 +106,8 @@ class Shit {
 
     protected function getXDaysOfRecentEvents() {
         $query = $this->pdo->prepare("
-            SELECT id, x_value, y_value, z_value, type, timestamp FROM  pump_events
+            SELECT id, x_value, y_value, z_value, type, timestamp
+            FROM  pump_events
             WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
             ORDER BY timestamp
         ");
@@ -116,9 +118,9 @@ class Shit {
 
     protected function getMaxAbsoluteValue($event) {
         // Startup and Healthcheck events have their gryoscopic data overwritten for visual aesthetic
-        if ($event->type == self::STARTUP) {
+        if ($event->type == self::EVENT_TYPE_STARTUP) {
             return 11;
-        } elseif ($event->type == self::HEALTHCHECK) {
+        } elseif ($event->type == self::EVENT_TYPE_HEALTHCHECK) {
             return 1;
         }
 
@@ -140,7 +142,7 @@ class Shit {
             AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::HEALTHCHECK_THRESHOLD . " HOUR)
         ");
 
-        $query->execute([':type' => self::HEALTHCHECK]);
+        $query->execute([':type' => self::EVENT_TYPE_HEALTHCHECK]);
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
@@ -152,7 +154,7 @@ class Shit {
             AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::PUMPING_THRESHOLD . " DAY)
         ");
 
-        $query->execute([':type' => self::PUMPING]);
+        $query->execute([':type' => self::EVENT_TYPE_PUMPING]);
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 

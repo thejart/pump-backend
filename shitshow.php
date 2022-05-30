@@ -2,15 +2,20 @@
 require __DIR__ . '/lib/shit.class.php';
 
 class ShitShow extends Shit {
+    const FIFTEEN_MINUTES = 900;
+    const THREE_MINUTES = 180;
+
     const BACKGROUND_OPTIONS = [
-        self::STARTUP => "rgba(54, 162, 235, 1)",       // blue
-        self::PUMPING => "rgba(139, 69, 19, 0.4)",      // brown
-        self::HEALTHCHECK => "rgba(201, 203, 207, 0.2)" // grey
+        self::EVENT_TYPE_STARTUP =>         "rgba(54, 162, 235, 1)",    // blue
+        self::EVENT_TYPE_PUMPING =>         "rgba(139, 69, 19, 0.4)",   // brown
+        self::EVENT_TYPE_WASHING_MACHINE => "rgba(97, 148, 49, 0.4)",   // green
+        self::EVENT_TYPE_HEALTHCHECK =>     "rgba(201, 203, 207, 0.2)"  // grey
     ];
     const BORDER_OPTIONS = [
-        self::STARTUP => "rgb(54, 162, 235)",     // blue
-        self::PUMPING => "rgb(139, 69, 19)",      // brown
-        self::HEALTHCHECK => "rgb(201, 203, 207)" // grey
+        self::EVENT_TYPE_STARTUP =>         "rgb(54, 162, 235)",    // blue
+        self::EVENT_TYPE_PUMPING =>         "rgb(139, 69, 19)",     // brown
+        self::EVENT_TYPE_WASHING_MACHINE => "rgb(97, 148, 49)",     // green
+        self::EVENT_TYPE_HEALTHCHECK =>     "rgb(201, 203, 207)"    // grey
     ];
 
     /** @var int */
@@ -31,9 +36,9 @@ class ShitShow extends Shit {
             $graphedDatum->x = $event->timestamp;
             $graphedDatum->y = $this->getMaxAbsoluteValue($event);
 
-            if ($event->type == ShitShow::STARTUP) {
+            if ($event->type == ShitShow::EVENT_TYPE_STARTUP) {
                 $startupData[] = $graphedDatum;
-            } elseif ($event->type == ShitShow::PUMPING) {
+            } elseif ($event->type == ShitShow::EVENT_TYPE_PUMPING) {
                 $pumpingData[] = $graphedDatum;
             } else {
                 $healthcheckData[] = $graphedDatum;
@@ -54,6 +59,37 @@ class ShitShow extends Shit {
     public function getViewWindow() {
         return $this->viewWindow;
     }
+
+    public function deduceWashingMachineEvents($events) {
+        $skipEventCounter = 0;
+        $pumpingEvents = [];
+        $washingEvents = [];
+
+        foreach ($events as $i => $event) {
+            if ($skipEventCounter) {
+                $skipEventCounter--;
+                continue;
+            }
+
+            if (!$events[$i+2]) {
+                $pumpingEvents[] = $event;
+                continue;
+            }
+
+            // if event[i+2] is within 15 minutes of event[i] AND event[i+1] is within 3 minutes of event[i],
+            // we probably have a washing machine event
+            if ((strtotime($events[$i+2]->x) - strtotime($event->x)) <= self::FIFTEEN_MINUTES) {
+                if ((strtotime($events[$i+1]->x) - strtotime($event->x)) <= self::THREE_MINUTES) {
+                    $washingEvents[] = $event;
+                    $skipEventCounter = 2;
+                }
+            } else {
+                $pumpingEvents[] = $event;
+            }
+        }
+
+        return [$pumpingEvents, $washingEvents];
+    }
 }
 
 /**
@@ -64,9 +100,10 @@ class ShitShow extends Shit {
  *   - Pumping hasn't happened in X days(?)
  */
 $shitShow = new ShitShow();
-$recentEpoch = $shitShow->getMostRecentEventsOfEachType()[ShitShow::STARTUP];
+$recentEpoch = $shitShow->getMostRecentEventsOfEachType()[ShitShow::EVENT_TYPE_STARTUP];
 $calloutCount = $shitShow->getCurrentCalloutCount();
 list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
+list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachineEvents($pumpingData);
 ?>
 
 <html>
@@ -84,29 +121,40 @@ list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
       const pumpingData = <?php echo json_encode($pumpingData); ?>;
       const healthcheckData = <?php echo json_encode($healthcheckData); ?>;
 
+      const deducedPumpingData = <?php echo json_encode($deducedPumpingData); ?>;
+      const deducedWashingData = <?php echo json_encode($deducedWashingData); ?>;
+
       const data = {
         datasets: [
           {
             label: 'Startup Signals',
             data: startupData,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::STARTUP); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor(Shit::STARTUP); ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::EVENT_TYPE_STARTUP); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_STARTUP); ?>",
             borderWidth: 1,
             barThickness: 5,
           },
           {
             label: 'Pumping Signals',
-            data: pumpingData,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::PUMPING); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor(Shit::PUMPING); ?>",
+            data: deducedPumpingData,
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::EVENT_TYPE_PUMPING); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_PUMPING); ?>",
+            borderWidth: 1,
+            barThickness: 10,
+          },
+          {
+            label: 'Washing Machine Signals',
+            data: deducedWashingData,
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::EVENT_TYPE_WASHING_MACHINE); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_WASHING_MACHINE); ?>",
             borderWidth: 1,
             barThickness: 10,
           },
           {
             label: 'Healthcheck Signals',
             data: healthcheckData,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::HEALTHCHECK); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor(Shit::HEALTHCHECK); ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::EVENT_TYPE_HEALTHCHECK); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_HEALTHCHECK); ?>",
             borderWidth: 1,
             barThickness: 20,
           },
