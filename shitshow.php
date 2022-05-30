@@ -78,11 +78,10 @@ class ShitShow extends Shit {
 
             // if event[i+2] is within 15 minutes of event[i] AND event[i+1] is within 3 minutes of event[i],
             // we probably have a washing machine event
-            if ((strtotime($events[$i+2]->x) - strtotime($event->x)) <= self::FIFTEEN_MINUTES) {
-                if ((strtotime($events[$i+1]->x) - strtotime($event->x)) <= self::THREE_MINUTES) {
-                    $washingEvents[] = $event;
-                    $skipEventCounter = 2;
-                }
+            if (strtotime($events[$i+2]->x) - strtotime($event->x) <= self::FIFTEEN_MINUTES &&
+                    strtotime($events[$i+1]->x) - strtotime($event->x) <= self::THREE_MINUTES) {
+                $washingEvents[] = $event;
+                $skipEventCounter = 2;
             } else {
                 $pumpingEvents[] = $event;
             }
