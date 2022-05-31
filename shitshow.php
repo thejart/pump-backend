@@ -20,10 +20,13 @@ class ShitShow extends Shit {
 
     /** @var int */
     protected $viewWindow;
+    /** @var bool */
+    protected $viewDeducedEvents;
 
     public function __construct() {
         parent::__construct();
         $this->viewWindow = $this->getRequestParam('days', 7);
+        $this->viewDeducedEvents = $this->getRequestParam('deduced', true);
     }
 
     public function getChartData() {
@@ -58,6 +61,10 @@ class ShitShow extends Shit {
 
     public function getViewWindow() {
         return $this->viewWindow;
+    }
+
+    public function getViewDeducedEvents() {
+        return $this->viewDeducedEvents;
     }
 
     public function deduceWashingMachineEvents($events) {
@@ -135,12 +142,16 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
           },
           {
             label: 'Pumping Signals',
-            data: deducedPumpingData,
+            data: <?php echo $shitShow->getViewDeducedEvents() ? 'deducedPumpingData' : 'pumpingData'; ?>,
             backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::EVENT_TYPE_PUMPING); ?>",
             borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_PUMPING); ?>",
             borderWidth: 1,
             barThickness: 10,
-          },
+          }
+        ]
+      };
+<?php if ($shitShow->getViewDeducedEvents()): ?>
+      data.datasets.push(
           {
             label: 'Washing Machine Signals',
             data: deducedWashingData,
@@ -148,7 +159,10 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
             borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_WASHING_MACHINE); ?>",
             borderWidth: 1,
             barThickness: 10,
-          },
+          }
+      );
+<?php endif; ?>
+      data.datasets.push(
           {
             label: 'Healthcheck Signals',
             data: healthcheckData,
@@ -156,9 +170,8 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
             borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_HEALTHCHECK); ?>",
             borderWidth: 1,
             barThickness: 20,
-          },
-        ]
-      };
+          }
+      );
 
       const config = {
         type: 'bar',
