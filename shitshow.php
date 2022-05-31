@@ -71,7 +71,7 @@ class ShitShow extends Shit {
                 continue;
             }
 
-            if (!$events[$i+2]) {
+            if (!isset($events[$i+2])) {
                 $pumpingEvents[] = $event;
                 continue;
             }
