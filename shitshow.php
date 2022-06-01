@@ -183,6 +183,7 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
         type: 'bar',
         data: data,
         options: {
+          aspectRatio: 1.5,
           plugins: {
             title: {
               display: true,
@@ -214,8 +215,14 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
   </head>
 
   <body>
-    <div class="chart-container" style="position: relative; height: 40vh; width: 80vw">
+    <div class="chart-container" style="position:relative; height:80vh; width:100vw; padding-left:10px; padding-right:10px;">
       <canvas id="pumpCanvas"></canvas>
+    </div>
+    <div class="navbar fixed-bottom">
+      <a class="btn btn-primary" href="shitshow.php" role="button">Reset</a>
+      <a class="btn btn-primary" href="shitshow.php?deduced=0" role="button">De-Deduce</a>
+      <a class="btn btn-primary" href="shitshow.php?days=1" role="button">Today</a>
+      <a class="btn btn-primary" href="shitshow.php?days=14" role="button">2 Weeks</a>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
