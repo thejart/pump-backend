@@ -22,11 +22,14 @@ class ShitShow extends Shit {
     protected $viewWindow;
     /** @var bool */
     protected $viewDeducedEvents;
+    /** @var string */
+    protected $filename;
 
     public function __construct() {
         parent::__construct();
         $this->viewWindow = $this->getRequestParam('days', 7);
         $this->viewDeducedEvents = $this->getRequestParam('deduced', true);
+        $this->filename = $_SERVER['SCRIPT_NAME'];
     }
 
     public function getChartData() {
@@ -65,6 +68,10 @@ class ShitShow extends Shit {
 
     public function getViewDeducedEvents() {
         return $this->viewDeducedEvents;
+    }
+
+    public function getFilename() {
+        return $this->filename;
     }
 
     public function deduceWashingMachineEvents($events) {
@@ -219,10 +226,10 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
       <canvas id="pumpCanvas"></canvas>
     </div>
     <div class="navbar fixed-bottom">
-      <a class="btn btn-primary" href="shitshow.php" role="button">Reset</a>
-      <a class="btn btn-primary" href="shitshow.php?deduced=0" role="button">Raw Data</a>
-      <a class="btn btn-primary" href="shitshow.php?days=1" role="button">Today</a>
-      <a class="btn btn-primary" href="shitshow.php?days=14" role="button">2 Weeks</a>
+      <a class="btn btn-primary" href="<?php echo $shitShow->getFilename(); ?>" role="button">Reset</a>
+      <a class="btn btn-primary" href="<?php echo $shitShow->getFilename(); ?>?deduced=0" role="button">Raw Data</a>
+      <a class="btn btn-primary" href="<?php echo $shitShow->getFilename(); ?>?days=1" role="button">Today</a>
+      <a class="btn btn-primary" href="<?php echo $shitShow->getFilename(); ?>?days=14" role="button">2 Weeks</a>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
