@@ -220,7 +220,7 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
     </div>
     <div class="navbar fixed-bottom">
       <a class="btn btn-primary" href="shitshow.php" role="button">Reset</a>
-      <a class="btn btn-primary" href="shitshow.php?deduced=0" role="button">De-Deduce</a>
+      <a class="btn btn-primary" href="shitshow.php?deduced=0" role="button">Raw Data</a>
       <a class="btn btn-primary" href="shitshow.php?days=1" role="button">Today</a>
       <a class="btn btn-primary" href="shitshow.php?days=14" role="button">2 Weeks</a>
     </div>
