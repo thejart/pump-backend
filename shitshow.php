@@ -133,8 +133,9 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
     <script type='text/javascript'>
       const hourFormat = 'MM/DD HH:mm';
       const dateFormat = 'ddd, MMM DD';
-      const recentEpochString = moment("<?php echo $recentEpoch; ?>").fromNow();
-      const title = 'Pump Events (Viewing <?php echo ($shitShow->getViewWindow() > 0) ? $shitShow->getViewWindow() : 'all current'; ?> days, Restarted ' + recentEpochString + ', Current request count: ' + <?php echo $calloutCount?> + ')';
+      const recentEpochString = moment('<?php echo $recentEpoch; ?>').fromNow();
+      const viewingWindowString = '<?php echo ($shitShow->getViewWindow() > 0) ? "Viewing " . $shitShow->getViewWindow() . " days, " : ""; ?>';
+      const title = 'Pump Events (' + viewingWindowString + 'Restarted ' + recentEpochString + ', Current request count: ' + <?php echo $calloutCount?> + ')';
 
       const startupData = <?php echo json_encode($startupData); ?>;
       const pumpingData = <?php echo json_encode($pumpingData); ?>;
