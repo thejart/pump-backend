@@ -27,8 +27,8 @@ class ShitShow extends Shit {
 
     public function __construct() {
         parent::__construct();
-        $this->viewWindow = $this->getRequestParam('days', 7);
-        $this->viewDeducedEvents = $this->getRequestParam('deduced', true);
+        $this->viewWindow = (int)$this->getRequestParam('days', 7);
+        $this->viewDeducedEvents = (bool)$this->getRequestParam('deduced', true);
         $this->filename = $_SERVER['SCRIPT_NAME'];
     }
 
@@ -134,7 +134,7 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
       const hourFormat = 'MM/DD HH:mm';
       const dateFormat = 'ddd, MMM DD';
       const recentEpochString = moment("<?php echo $recentEpoch; ?>").fromNow();
-      const title = 'Pump Events (Viewing <?php echo $shitShow->getViewWindow(); ?> days, Restarted ' + recentEpochString + ', Current request count: ' + <?php echo $calloutCount?> + ')';
+      const title = 'Pump Events (Viewing <?php echo ($shitShow->getViewWindow() > 0) ? $shitShow->getViewWindow() : 'all current'; ?> days, Restarted ' + recentEpochString + ', Current request count: ' + <?php echo $calloutCount?> + ')';
 
       const startupData = <?php echo json_encode($startupData); ?>;
       const pumpingData = <?php echo json_encode($pumpingData); ?>;
@@ -226,10 +226,10 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
       <canvas id="pumpCanvas"></canvas>
     </div>
     <div class="navbar fixed-bottom">
-      <a class="btn btn-primary" href="<?php echo $shitShow->getFilename(); ?>" role="button">Reset</a>
-      <a class="btn btn-primary" href="<?php echo $shitShow->getFilename(); ?>?deduced=0" role="button">Raw Data</a>
-      <a class="btn btn-primary" href="<?php echo $shitShow->getFilename(); ?>?days=1" role="button">Today</a>
-      <a class="btn btn-primary" href="<?php echo $shitShow->getFilename(); ?>?days=14" role="button">2 Weeks</a>
+      <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>" role="button">Reset</a>
+      <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>?deduced=0" role="button">Raw Data</a>
+      <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>?days=1" role="button">1 Day</a>
+      <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>?days=-1" role="button">Full cycle</a>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
