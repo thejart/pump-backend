@@ -4,7 +4,7 @@ So you've got yourself an Arduino board to monitor your evacuation pump and load
 ## Scripts Overview
 - `shitty.php` This is the endpoint that the pump monitor's HTTP request will hit. It's responsible for parsing out the query params, determining the type of request (startup, pumping or healthcheck) and inserting a row into a database table.
 - `shitshow.php` This is an endpoint used to display recent requests in a graph format (see below for more info).
-- `wipecheck.php` This is an optional script that should be cron'd. It will monitor recent usage and send a text message via Twilio (Note: You'll need an active account, which they offer for free) if any thresholds have been met.
+- `wipecheck.php` This is an optional script that should be cron'd. It will monitor recent usage and send a text message via Twilio (**Note:** You'll need an active account, which they offer for free) if any thresholds have been met.
 
 ## Getting Started
 1. Get the [pump monitor](https://github.com/thejart/pump-monitor) setup
@@ -41,6 +41,8 @@ The secrets file contains all the personal data that needs to be kept out of sou
 ```
 
 ### shitshow.php / Chart.js
-The shitshow.php endpoint uses Chart.js to display recent events. An optional GET parameter, `days` can be added to change the number of days displayed in the chart.
+The shitshow.php endpoint uses Chart.js to display recent events and accomodates a few optional GET parameters:
+- `days` (Default: 7) Changes the number of days rendered in the chart
+- `deduced` (Default: true) Toggles whether washing machine events are interpretted from the given pump events and displays them as a separate dataset. **Note:** This is admitedly *very* specific to my setup and should probably be 1) configurable and 2) not on by default, but hey, I'm the only one using this at the moment.
 
 <img width="995" alt="image" src="https://user-images.githubusercontent.com/1659844/171009829-07affab9-a130-4471-92c3-644c3c40cca6.png">
