@@ -105,12 +105,22 @@ class Shit {
     }
 
     protected function getXDaysOfRecentEvents() {
-        $query = $this->pdo->prepare("
-            SELECT id, x_value, y_value, z_value, type, timestamp
-            FROM  pump_events
-            WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
-            ORDER BY timestamp
-        ");
+        if ($this->viewWindow <= 0) {
+            // Any non-positive value will result in gathering all events since the last startup signal
+            $query = $this->pdo->prepare("
+                SELECT id, x_value, y_value, z_value, type, timestamp
+                FROM  pump_events
+                WHERE timestamp >= '{$this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP]}'
+                ORDER BY timestamp
+            ");
+        } else {
+            $query = $this->pdo->prepare("
+                SELECT id, x_value, y_value, z_value, type, timestamp
+                FROM  pump_events
+                WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
+                ORDER BY timestamp
+            ");
+        }
 
         $query->execute();
         return $query->fetchAll(PDO::FETCH_OBJ);
