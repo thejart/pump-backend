@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/lib/shit.class.php';
+require __DIR__ . '/lib/BaseShit.class.php';
 
 use Twilio\Rest\Client;
 
