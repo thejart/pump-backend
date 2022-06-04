@@ -1,6 +1,6 @@
 <?php
 
-class Shit {
+class BaseShit {
     const EVENT_TYPE_STARTUP = 1;
     const EVENT_TYPE_PUMPING = 2;
     const EVENT_TYPE_HEALTHCHECK = 3;
