@@ -7,8 +7,8 @@ class ShitPumper extends BaseShit {
     protected $zValue;
     protected $type;
 
-    public function __construct() {
-        parent::__construct();
+    public function __construct($envFile = '.env') {
+        parent::__construct($envFile);
         $this->parseRequestParams();
     }
 

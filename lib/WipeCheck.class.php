@@ -5,8 +5,8 @@ class WipeCheck extends BaseShit {
     /** @var array */
     private $alerts = [];
 
-    public function __construct() {
-        parent::__construct(true);
+    public function __construct($envFile = '.env') {
+        parent::__construct($envFile, true);
     }
 
     public function shouldTextAlert() {
