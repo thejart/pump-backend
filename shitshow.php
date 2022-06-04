@@ -46,16 +46,16 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
           {
             label: 'Startup Signals',
             data: startupData,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::EVENT_TYPE_STARTUP); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_STARTUP); ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(ShitShow::EVENT_TYPE_STARTUP); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(ShitShow::EVENT_TYPE_STARTUP); ?>",
             borderWidth: 1,
             barThickness: 5,
           },
           {
             label: 'Pumping Signals',
             data: <?php echo $shitShow->getViewDeducedEvents() ? 'deducedPumpingData' : 'pumpingData'; ?>,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::EVENT_TYPE_PUMPING); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_PUMPING); ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(ShitShow::EVENT_TYPE_PUMPING); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(ShitShow::EVENT_TYPE_PUMPING); ?>",
             borderWidth: 1,
             barThickness: 10,
           }
@@ -66,8 +66,8 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
           {
             label: 'Washing Machine Signals',
             data: deducedWashingData,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::EVENT_TYPE_WASHING_MACHINE); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_WASHING_MACHINE); ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(ShitShow::EVENT_TYPE_WASHING_MACHINE); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(ShitShow::EVENT_TYPE_WASHING_MACHINE); ?>",
             borderWidth: 1,
             barThickness: 10,
           }
@@ -77,8 +77,8 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
           {
             label: 'Healthcheck Signals',
             data: healthcheckData,
-            backgroundColor: "<?php echo $shitShow->getBackgroundColor(Shit::EVENT_TYPE_HEALTHCHECK); ?>",
-            borderColor: "<?php echo $shitShow->getBorderColor(Shit::EVENT_TYPE_HEALTHCHECK); ?>",
+            backgroundColor: "<?php echo $shitShow->getBackgroundColor(ShitShow::EVENT_TYPE_HEALTHCHECK); ?>",
+            borderColor: "<?php echo $shitShow->getBorderColor(ShitShow::EVENT_TYPE_HEALTHCHECK); ?>",
             borderWidth: 1,
             barThickness: 20,
           }
