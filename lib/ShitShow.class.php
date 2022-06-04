@@ -42,9 +42,9 @@ class ShitShow extends BaseShit {
             $graphedDatum->x = $event->timestamp;
             $graphedDatum->y = $this->getMaxAbsoluteValue($event);
 
-            if ($event->type == ShitShow::EVENT_TYPE_STARTUP) {
+            if ($event->type == self::EVENT_TYPE_STARTUP) {
                 $startupData[] = $graphedDatum;
-            } elseif ($event->type == ShitShow::EVENT_TYPE_PUMPING) {
+            } elseif ($event->type == self::EVENT_TYPE_PUMPING) {
                 $pumpingData[] = $graphedDatum;
             } else {
                 $healthcheckData[] = $graphedDatum;
