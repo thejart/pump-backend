@@ -37,7 +37,7 @@ class ShitShow extends BaseShit {
         $pumpingData = [];
         $healthcheckData = [];
 
-        foreach ($this->getXDaysOfRecentEvents() as $event) {
+        foreach ($this->getXDaysOfRecentEvents($this->viewWindow) as $event) {
             $graphedDatum = new stdClass();
             $graphedDatum->x = $event->timestamp;
             $graphedDatum->y = $this->getMaxAbsoluteValue($event);

@@ -111,8 +111,8 @@ class BaseShit {
         return $this->text_number;
     }
 
-    protected function getXDaysOfRecentEvents() {
-        if ($this->viewWindow <= 0) {
+    protected function getXDaysOfRecentEvents(int $viewWindow) {
+        if ($viewWindow <= 0) {
             // Any non-positive value will result in gathering all events since the last startup signal
             $query = $this->pdo->prepare("
                 SELECT id, x_value, y_value, z_value, type, timestamp
@@ -124,7 +124,7 @@ class BaseShit {
             $query = $this->pdo->prepare("
                 SELECT id, x_value, y_value, z_value, type, timestamp
                 FROM  pump_events
-                WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
+                WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$viewWindow} DAY)
                 ORDER BY timestamp
             ");
         }
@@ -151,12 +151,12 @@ class BaseShit {
         return $maxAbsValue;
     }
 
-    protected function hasHadRecentHealthCheck() {
+    protected function numberOfHealthChecksInLastXHours(int $numberOfHours) {
         $query = $this->pdo->prepare("
             SELECT COUNT(*) AS count
             FROM pump_events
             WHERE type=:type
-            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::HEALTHCHECK_THRESHOLD . " HOUR)
+            AND timestamp > DATE_SUB(NOW(), INTERVAL {$numberOfHours} HOUR)
         ");
 
         $query->execute([':type' => self::EVENT_TYPE_HEALTHCHECK]);
