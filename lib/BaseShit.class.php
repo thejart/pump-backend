@@ -111,8 +111,8 @@ class BaseShit {
         return $this->text_number;
     }
 
-    protected function getXDaysOfRecentEvents(int $viewWindow) {
-        if ($viewWindow <= 0) {
+    protected function getXDaysOfRecentEvents(int $numberOfDays) {
+        if ($numberOfDays <= 0) {
             // Any non-positive value will result in gathering all events since the last startup signal
             $query = $this->pdo->prepare("
                 SELECT id, x_value, y_value, z_value, type, timestamp
@@ -124,7 +124,7 @@ class BaseShit {
             $query = $this->pdo->prepare("
                 SELECT id, x_value, y_value, z_value, type, timestamp
                 FROM  pump_events
-                WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$viewWindow} DAY)
+                WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$numberOfDays} DAY)
                 ORDER BY timestamp
             ");
         }
