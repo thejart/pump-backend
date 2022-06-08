@@ -45,9 +45,10 @@ class WipeCheck extends BaseShit {
             $healthChecksInLastWeek = $this->numberOfHealthChecksInLastXHours(24 * 7);
             $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
 
-            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events," .
+            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and" .
                                      //" w/ Y inferred washing machine events) and" .
-                                     " {$healthChecksInLastWeek} health checks and {$totalCallouts} HTTP requests";
+                                     " {$healthChecksInLastWeek} health checks this week" .
+                                     " with {$totalCallouts} total HTTP requests";
             return true;
         }
 
