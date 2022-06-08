@@ -41,7 +41,7 @@ class WipeCheck extends BaseShit {
         }
 
         // ...or send a summary
-        if ($this->day === 6 && $this->hour < 12) {
+        if ($this->day == 6 && $this->hour < 12) {
             $healthChecksInLastWeek = $this->numberOfHealthChecksInLastXHours(24 * 7);
             $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
 
