@@ -11,7 +11,7 @@ class WipeCheck extends BaseShit {
     /** @var int */
     private $day;
 
-    public function __construct($envFile = '.env') {
+    public function __construct($envFile = '.env.fuck') {
         parent::__construct($envFile, true);
         $this->hour = date("H"); // 00 through 23
         $this->day = date("N");  // 1 through 7, Mon through Sun
