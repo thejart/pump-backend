@@ -18,15 +18,15 @@ class BaseShit {
     private $account_sid;
     /** @var string */
     private $auth_token;
-    /** @var string[] */
-    private $twilio_numbers;
     /** @var string */
-    private $text_number;
+    private $twilio_number;
+    /** @var string[] */
+    private $text_numbers;
 
     public function __construct($envFile, $shouldParseTwilioSecrets = false) {
         if ($shouldParseTwilioSecrets) {
-            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->account_sid, $this->auth_token, $twilioNumbersString, $this->text_number) = $this->setupEnvironment($envFile);
-            $this->twilio_numbers = explode(",", $twilioNumbersString);
+            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->account_sid, $this->auth_token, $this->twilio_number, $textNumbersString) = $this->setupEnvironment($envFile);
+            $this->text_numbers = explode(",", $textNumbersString);
         } else {
             list($mysqlDatabase, $mysqlUsername, $mysqlPassword) = $this->setupEnvironment($envFile);
         }
@@ -108,12 +108,12 @@ class BaseShit {
         return $this->auth_token;
     }
 
-    public function getTwilioNumbers() {
-        return $this->twilio_numbers;
+    public function getTwilioNumber() {
+        return $this->twilio_number;
     }
 
-    public function getTextNumber() {
-        return $this->text_number;
+    public function getTextNumbers() {
+        return $this->text_numbers;
     }
 
     protected function getXDaysOfRecentEvents(int $numberOfDays) {
