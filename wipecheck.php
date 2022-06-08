@@ -8,10 +8,10 @@ $wipeCheck = new WipeCheck();
 if ($wipeCheck->shouldTextAlert()) {
     $client = new Client($wipeCheck->getAccountSid(), $wipeCheck->getAuthToken());
 
-    foreach ($wipeCheck->getTwilioNumbers() as $twilioNumber) {
+    foreach ($wipeCheck->getTextNumbers() as $textNumber) {
         $client->messages->create(
-            $wipeCheck->getTextNumber(), [
-                'from' => $twilioNumber,
+            $textNumber, [
+                'from' => $wipeCheck->getTwilioNumber(),
                 'body' => $wipeCheck->getMessage()
             ]
         );
