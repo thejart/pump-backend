@@ -11,7 +11,7 @@ So you've got yourself an Arduino board to monitor your evacuation pump and load
 2. Setup a webserver with a relational database
 3. Create a table for storing pump events (see below)
 4. Clone this repo in a web directory
-5. Create a secrets file and lock it down (see below)
+5. Create an .env file and lock it down (see below)
 
 ---
 ### Table Schema
@@ -28,8 +28,8 @@ CREATE TABLE `pump_events` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
 ```
 
-### secrets file
-The secrets file contains all the personal data that needs to be kept out of source control. Make sure that it's readable by your webserver's user, but otherwise locked down (eg. `chown <youruser>:<webuser> secrets && chmod 640 secrets`).
+### .env file
+The .env file contains all the personal data that needs to be kept out of source control. Make sure that it's readable by your webserver's user, but otherwise locked down (eg. `chown <youruser>:<webuser> .env && chmod 640 .env`).
 ```
 <mysql database>
 <mysql username>

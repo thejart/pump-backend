@@ -1,6 +1,6 @@
 <?php
 
-class Shit {
+class BaseShit {
     const EVENT_TYPE_STARTUP = 1;
     const EVENT_TYPE_PUMPING = 2;
     const EVENT_TYPE_HEALTHCHECK = 3;
@@ -14,20 +14,32 @@ class Shit {
     private $pdo;
 
     // Twilio Secrets
+    /** @var string */
     private $account_sid;
+    /** @var string */
     private $auth_token;
+    /** @var string */
     private $twilio_number;
-    private $text_number;
+    /** @var string[] */
+    private $text_numbers;
 
-    public function __construct($shouldParseTwilioSecrets = false) {
+    public function __construct($envFile, $shouldParseTwilioSecrets = false) {
         if ($shouldParseTwilioSecrets) {
-            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->account_sid, $this->auth_token, $this->twilio_number, $this->text_number) = $this->setupEnvironment();
+            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->account_sid, $this->auth_token, $this->twilio_number, $textNumbersString) = $this->setupEnvironment($envFile);
+            $this->text_numbers = explode(",", $textNumbersString);
         } else {
-            list($mysqlDatabase, $mysqlUsername, $mysqlPassword) = $this->setupEnvironment();
+            list($mysqlDatabase, $mysqlUsername, $mysqlPassword) = $this->setupEnvironment($envFile);
         }
 
-        $this->pdo = new PDO("mysql:host=127.0.0.1;dbname=". $mysqlDatabase, $mysqlUsername, $mysqlPassword);
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+            $this->pdo = new PDO("mysql:host=127.0.0.1;dbname=". $mysqlDatabase, $mysqlUsername, $mysqlPassword);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (Exception $e) {
+            // Seems hacky, but tests gotta test
+            if (strpos($envFile, 'testing') === false) {
+                exit;
+            }
+        }
     }
 
     public function insertPumpEvent() {
@@ -100,12 +112,12 @@ class Shit {
         return $this->twilio_number;
     }
 
-    public function getTextNumber() {
-        return $this->text_number;
+    public function getTextNumbers() {
+        return $this->text_numbers;
     }
 
-    protected function getXDaysOfRecentEvents() {
-        if ($this->viewWindow <= 0) {
+    protected function getXDaysOfRecentEvents(int $numberOfDays) {
+        if ($numberOfDays <= 0) {
             // Any non-positive value will result in gathering all events since the last startup signal
             $query = $this->pdo->prepare("
                 SELECT id, x_value, y_value, z_value, type, timestamp
@@ -117,7 +129,7 @@ class Shit {
             $query = $this->pdo->prepare("
                 SELECT id, x_value, y_value, z_value, type, timestamp
                 FROM  pump_events
-                WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$this->viewWindow} DAY)
+                WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$numberOfDays} DAY)
                 ORDER BY timestamp
             ");
         }
@@ -144,12 +156,12 @@ class Shit {
         return $maxAbsValue;
     }
 
-    protected function hasHadRecentHealthCheck() {
+    protected function numberOfHealthChecksInLastXHours(int $numberOfHours) {
         $query = $this->pdo->prepare("
             SELECT COUNT(*) AS count
             FROM pump_events
             WHERE type=:type
-            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::HEALTHCHECK_THRESHOLD . " HOUR)
+            AND timestamp > DATE_SUB(NOW(), INTERVAL {$numberOfHours} HOUR)
         ");
 
         $query->execute([':type' => self::EVENT_TYPE_HEALTHCHECK]);
@@ -172,12 +184,12 @@ class Shit {
         return isset($_REQUEST[$field]) ? $_REQUEST[$field] : $default;
     }
 
-    private function setupEnvironment() {
+    private function setupEnvironment($envFile) {
         try {
-            $environmentFile = file_get_contents('secrets');
+            $parsedEnvFile = file_get_contents($envFile);
         } catch (Exception $e) {
             throw new Exception('Unable to read in environment file :'. $e->getMessage());
         }
-        return explode("\n", $environmentFile);
+        return explode("\n", $parsedEnvFile);
     }
 }
