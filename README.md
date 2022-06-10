@@ -36,8 +36,8 @@ The .env file contains all the personal data that needs to be kept out of source
 <mysql password>
 <twilio account sid>
 <twilio auth token>
-<twilio number>
-<SMS number>
+<twilio sender number>
+<SMS (comma delimited) recipient numbers>
 ```
 
 ### shitshow.php / Chart.js
