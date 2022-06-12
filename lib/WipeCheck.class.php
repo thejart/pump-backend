@@ -13,8 +13,8 @@ class WipeCheck extends BaseShit {
 
     public function __construct($envFile = '.env') {
         parent::__construct($envFile, true);
-        $this->hour = date("H"); // 00 through 23
-        $this->day = date("N");  // 1 through 7, Mon through Sun
+        $this->hour = (int)date("H"); // 00 through 23
+        $this->day = (int)date("N");  // 1 through 7, Mon through Sun
     }
 
     public function shouldTextAlert() {
