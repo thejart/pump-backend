@@ -30,6 +30,8 @@ CREATE TABLE `pump_events` (
 
 ### .env file
 The .env file contains all the personal data that needs to be kept out of source control. Make sure that it's readable by your webserver's user, but otherwise locked down (eg. `chown <youruser>:<webuser> .env && chmod 640 .env`).
+
+**IMPORTANT:** Make sure this file isn't leaked to the world by your webserver!
 ```
 <mysql database>
 <mysql username>
