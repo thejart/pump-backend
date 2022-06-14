@@ -35,6 +35,7 @@ class BaseShit {
             $this->pdo = new PDO("mysql:host=127.0.0.1;dbname=". $mysqlDatabase, $mysqlUsername, $mysqlPassword);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (Exception $e) {
+            error_log("Unable to connect to the database");
             // Seems hacky, but tests gotta test
             if (strpos($envFile, 'testing') === false) {
                 exit;
@@ -188,6 +189,7 @@ class BaseShit {
         try {
             $parsedEnvFile = file_get_contents($envFile);
         } catch (Exception $e) {
+            error_log("Unable to parse credentials in {$envFile}");
             throw new Exception('Unable to read in environment file :'. $e->getMessage());
         }
         return explode("\n", $parsedEnvFile);
