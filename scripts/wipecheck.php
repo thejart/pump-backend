@@ -5,7 +5,7 @@ require __DIR__ . '/lib/WipeCheck.class.php';
 use Twilio\Rest\Client;
 
 if (!isset($argv[1])) {
-    echo "Usage: /path/to/php wipecheck.php /path/to/.env\n";
+    echo "Usage: /path/to/php /path/to/wipecheck.php /path/to/.env\n";
     exit(1);
 }
 $envFullyQualifiedPath = $argv[1];
