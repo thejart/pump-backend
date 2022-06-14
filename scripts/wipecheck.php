@@ -1,6 +1,6 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/lib/WipeCheck.class.php';
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../lib/WipeCheck.class.php';
 
 use Twilio\Rest\Client;
 
