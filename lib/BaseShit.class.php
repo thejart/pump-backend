@@ -25,8 +25,6 @@ class BaseShit {
     private $text_numbers;
 
     public function __construct($envFile, $shouldParseTwilioSecrets = false) {
-        error_log("wipe log: " . date('Y-m-d h:i:s'));
-
         if ($shouldParseTwilioSecrets) {
             list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->account_sid, $this->auth_token, $this->twilio_number, $textNumbersString) = $this->setupEnvironment($envFile);
             $this->text_numbers = explode(",", $textNumbersString);
