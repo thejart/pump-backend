@@ -5,6 +5,7 @@ class BaseShit {
     const EVENT_TYPE_PUMPING = 2;
     const EVENT_TYPE_HEALTHCHECK = 3;
     const EVENT_TYPE_WASHING_MACHINE = 4;
+    const EVENT_TYPE_ERROR = 100;
 
     const CALLOUT_LIMIT = 250;        // the nano 33 iot seems to crap out around 300 HTTP callouts
     const HEALTHCHECK_THRESHOLD = 13; // hours (i.e. the healthcheck should occur every 12 hours, plus some wiggle room)
@@ -35,6 +36,7 @@ class BaseShit {
             $this->pdo = new PDO("mysql:host=127.0.0.1;dbname=". $mysqlDatabase, $mysqlUsername, $mysqlPassword);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (Exception $e) {
+            error_log("Unable to connect to the database");
             // Seems hacky, but tests gotta test
             if (strpos($envFile, 'testing') === false) {
                 exit;
@@ -49,12 +51,22 @@ class BaseShit {
             values (:x_value, :y_value, :z_value, :type, now())
         ");
 
-        $query->execute([
-            ':x_value' => $this->xValue,
-            ':y_value' => $this->yValue,
-            ':z_value' => $this->zValue,
-            ':type' => $this->type
-        ]);
+        try {
+            $query->execute([
+                ':x_value' => $this->xValue,
+                ':y_value' => $this->yValue,
+                ':z_value' => $this->zValue,
+                ':type' => $this->type
+            ]);
+        } catch (PDOException $e) {
+            error_log("Unable to insert pump event x:{$this->xValue}, y:{$this->yValue}, z:{$this->zValue}, type:{$this->type}");
+            $query->execute([
+                ':x_value' => -1,
+                ':y_value' => -1,
+                ':z_value' => -1,
+                ':type' => self::EVENT_TYPE_ERROR
+            ]);
+        }
 
         if ($query->rowCount()) {
             return true;
@@ -188,6 +200,7 @@ class BaseShit {
         try {
             $parsedEnvFile = file_get_contents($envFile);
         } catch (Exception $e) {
+            error_log("Unable to parse credentials in {$envFile}");
             throw new Exception('Unable to read in environment file :'. $e->getMessage());
         }
         return explode("\n", $parsedEnvFile);
