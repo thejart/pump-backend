@@ -4,7 +4,13 @@ require __DIR__ . '/lib/WipeCheck.class.php';
 
 use Twilio\Rest\Client;
 
-$wipeCheck = new WipeCheck();
+if (!isset($argv[1])) {
+    echo "Usage: /path/to/php wipecheck.php /path/to/.env\n";
+    exit(1);
+}
+$envFullyQualifiedPath = $argv[1];
+
+$wipeCheck = new WipeCheck($envFullyQualifiedPath);
 if ($wipeCheck->shouldTextAlert()) {
     $client = new Client($wipeCheck->getAccountSid(), $wipeCheck->getAuthToken());
 
