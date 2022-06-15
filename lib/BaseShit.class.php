@@ -194,7 +194,7 @@ class BaseShit {
     }
 
     protected function getRequestParam($field, $default = null) {
-        return isset($_REQUEST[$field]) ? $_REQUEST[$field] : $default;
+        return $_REQUEST[$field] ?? $default;
     }
 
     private function setupEnvironment($envFile) {
