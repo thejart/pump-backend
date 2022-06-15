@@ -39,6 +39,7 @@ class WipeCheck extends BaseShit {
         // Send an alert
         if ($this->isAnAlert) {
             // No need for a summary, get the alert out
+            error_log("[ALERTING] " . implode(",", $this->notifications));
             return true;
         }
 
@@ -51,6 +52,7 @@ class WipeCheck extends BaseShit {
                                      //" w/ Y inferred washing machine events) and" .
                                      " {$healthChecksInLastWeek} health checks this week" .
                                      " with {$totalCallouts} total HTTP requests";
+            error_log("[Notifying] " . implode(",", $this->notifications));
             return true;
         }
 
