@@ -169,14 +169,15 @@ class BaseShit {
     }
 
     protected function numberOfHealthChecksInLastXHours(int $numberOfHours) {
+        // Startup events are the initial healthcheck, so they should be included
         $query = $this->pdo->prepare("
             SELECT COUNT(*) AS count
             FROM pump_events
-            WHERE type=:type
+            WHERE (type=:startup OR type=:healthcheck)
             AND timestamp > DATE_SUB(NOW(), INTERVAL {$numberOfHours} HOUR)
         ");
 
-        $query->execute([':type' => self::EVENT_TYPE_HEALTHCHECK]);
+        $query->execute([':startup' => self::EVENT_TYPE_STARTUP, ':healthcheck' => self::EVENT_TYPE_HEALTHCHECK]);
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
