@@ -84,7 +84,7 @@ class BaseShit {
 
             $query->execute([':type' => $type]);
             $result = $query->fetchAll(PDO::FETCH_OBJ);
-            $results[$type] = $result[0]->timestamp;
+            $results[$type] = $query->rowCount() ? $result[0]->timestamp : null;
         }
 
         return $results;

@@ -63,20 +63,47 @@ final class BaseShitTest extends TestCase
         $this->assertEquals(3, $this->getTotalNumberOfEvents(), 'the event count does not match expected');
     }
 
-    public function test_getMostRecentEventsOfEachType() {
-        // TODO: Handle lack of data in getMostRecentEventsOfEachType()
+    public function test_getMostRecentEventsOfEachType_noData() {
         $shit = new BaseShit($this->envFile);
         $results = $shit->getMostRecentEventsOfEachType();
 
-        $this->assertEquals('2022-06-14 14:10:26', $results[BaseShit::EVENT_TYPE_STARTUP], 'startup fail');
-        $this->assertEquals('2022-06-15 08:49:16', $results[BaseShit::EVENT_TYPE_PUMPING], 'pumping fail');
-        $this->assertEquals('2022-06-15 14:08:59', $results[BaseShit::EVENT_TYPE_HEALTHCHECK], 'healthcheck fail');
+        $this->assertNull($results[BaseShit::EVENT_TYPE_STARTUP], 'event result type should be null');
+        $this->assertNull($results[BaseShit::EVENT_TYPE_PUMPING], 'event result type should be null');
+        $this->assertNull($results[BaseShit::EVENT_TYPE_HEALTHCHECK], 'event result type should be null');
+    }
+
+    public function test_getMostRecentEventsOfEachType() {
+        // insert multiple events of each type, keeping track of most recent
+        $recentStartupTimestamp = $this->convertUnixTimestampToDbFormat(strtotime('-5 minute'));
+        $recentHealthcheckTimestamp = $this->convertUnixTimestampToDbFormat(strtotime('-3 minute'));
+        $recentPumpingTimestamp = $this->convertUnixTimestampToDbFormat(strtotime('-1 minute'));
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_STARTUP, $recentStartupTimestamp);
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_HEALTHCHECK, $recentHealthcheckTimestamp);
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_PUMPING, $recentPumpingTimestamp);
+
+        // insert some older, red herring events of each type
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_STARTUP, $this->convertUnixTimestampToDbFormat(strtotime('-60 minutes')));
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_HEALTHCHECK, $this->convertUnixTimestampToDbFormat(strtotime('-50 minutes')));
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_HEALTHCHECK, $this->convertUnixTimestampToDbFormat(strtotime('-40 minutes')));
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_PUMPING, $this->convertUnixTimestampToDbFormat(strtotime('-30 minutes')));
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_PUMPING, $this->convertUnixTimestampToDbFormat(strtotime('-20 minutes')));
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_PUMPING, $this->convertUnixTimestampToDbFormat(strtotime('-10 minutes')));
+
+        $result = $this->getTotalNumberOfEvents();
+        $this->assertEquals(9, $result, 'the total number of events did not match expected');
+
+        $shit = new BaseShit($this->envFile);
+        $results = $shit->getMostRecentEventsOfEachType();
+
+        $this->assertEquals($recentStartupTimestamp, $results[BaseShit::EVENT_TYPE_STARTUP], 'startup fail');
+        $this->assertEquals($recentPumpingTimestamp, $results[BaseShit::EVENT_TYPE_PUMPING], 'pumping fail');
+        $this->assertEquals($recentHealthcheckTimestamp, $results[BaseShit::EVENT_TYPE_HEALTHCHECK], 'healthcheck fail');
     }
 
     public function test_getCurrentCalloutCount() {
         // getCurrentCalloutCount() should count all pump events that have occurred since, and including, the most recent
         // startup event. no events before that should be counted.
-        $this->insertIntoPumpEvents(1,2,3,BaseShit::EVENT_TYPE_STARTUP, $this->convertUnixTimestampToDbFormat(strtotime('now')));
+        $this->insertIntoPumpEvents(BaseShit::EVENT_TYPE_STARTUP, $this->convertUnixTimestampToDbFormat(strtotime('now')));
 
         $shit = new BaseShit($this->envFile);
         $result = $shit->getCurrentCalloutCount();
@@ -99,7 +126,7 @@ final class BaseShitTest extends TestCase
         return date("Y-m-d H:i:s", $unixTimestamp);
     }
 
-    private function insertIntoPumpEvents($x, $y, $z, $type, $timestamp) {
+    private function insertIntoPumpEvents($type, $timestamp, $x = 1, $y = 2, $z = 3) {
         $query = $this->pdo->prepare("
             INSERT INTO pump_events
             (x_value, y_value, z_value, type, timestamp)
