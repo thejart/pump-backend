@@ -89,6 +89,13 @@ final class BaseShitTest extends TestCase
         $this->assertEquals($recentHealthcheckTimestamp, $results[BaseShit::EVENT_TYPE_HEALTHCHECK], 'healthcheck fail');
     }
 
+    public function test_getCurrentCalloutCount_noData() {
+        $shit = new BaseShit($this->envFile);
+        $result = $shit->getCurrentCalloutCount();
+
+        $this->assertEquals(0, $result, 'there should be zero callouts');
+    }
+
     public function test_getCurrentCalloutCount() {
         // getCurrentCalloutCount() should count all pump events that have occurred since, and including, the most recent
         // startup event. no events before that should be counted.
