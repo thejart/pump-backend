@@ -28,4 +28,8 @@ class ShitPumper extends BaseShit {
             }
         }
     }
+
+    public function insertCurrentPumpEvent() {
+        return $this->insertPumpEvent($this->xValue, $this->yValue, $this->zValue, $this->type, date("Y-m-d H:i:s", strtotime('now'));
+    }
 }
