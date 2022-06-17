@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/BaseShit.class.php';
+require_once __DIR__ . '/BaseShit.class.php';
 
 class ShitPumper extends BaseShit {
     private $xValue;

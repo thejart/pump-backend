@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/BaseShit.class.php';
+require_once __DIR__ . '/BaseShit.class.php';
 
 class ShitShow extends BaseShit {
     const FIFTEEN_MINUTES = 900;
