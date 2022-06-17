@@ -11,7 +11,7 @@ class WipeCheck extends BaseShit {
     /** @var int */
     private $day;
 
-    public function __construct($envFile = '.env') {
+    public function __construct($envFile) {
         error_log("Wipe log: " . date('Y-m-d h:i:s'));
 
         parent::__construct($envFile, true);
