@@ -61,13 +61,6 @@ class BaseShit {
             ]);
         } catch (PDOException $e) {
             error_log("Unable to insert pump event x:{$x}, y:{$y}, z:{$z}, type:{$type}, timestamp:{$timestamp}");
-            $query->execute([
-                ':x_value' => -1,
-                ':y_value' => -1,
-                ':z_value' => -1,
-                ':type' => self::EVENT_TYPE_ERROR,
-                ':timestamp' => $timestamp
-            ]);
         }
 
         if ($query->rowCount()) {
