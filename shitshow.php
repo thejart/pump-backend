@@ -8,7 +8,7 @@ require __DIR__ . '/lib/ShitShow.class.php';
  *   - Healthcheck hasn't happened in the past 12 hours
  *   - Pumping hasn't happened in X days(?)
  */
-$shitShow = new ShitShow();
+$shitShow = new ShitShow('.env');
 $recentEpoch = $shitShow->getMostRecentEventsOfEachType()[ShitShow::EVENT_TYPE_STARTUP];
 $calloutCount = $shitShow->getCurrentCalloutCount();
 list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
