@@ -23,8 +23,8 @@ final class BaseShitTest extends TestCase
     public function test_constructor_hasNoTwilioSecrets() {
         $baseShit = new BaseShit($this->envFile);
 
-        $this->assertNull($baseShit->getTwilioNumbers(), "twilio number should be null");
-        $this->assertNull($baseShit->getTextNumber(), "text number should be null");
+        $this->assertNull($baseShit->getTwilioNumber(), "twilio number should be null");
+        $this->assertNull($baseShit->getTextNumbers(), "text number should be null");
         $this->assertNull($baseShit->getAuthToken(), "auth token should be null");
         $this->assertNull($baseShit->getAccountSid(), "account sid should be null");
     }
@@ -32,8 +32,8 @@ final class BaseShitTest extends TestCase
     public function test_constructor_hasTwilioSecrets() {
         $baseShit = new BaseShit($this->envFile, true);
 
-        $this->assertNotNull($baseShit->getTwilioNumbers(), "twilio number should not be null");
-        $this->assertNotNull($baseShit->getTextNumber(), "text number should not be null");
+        $this->assertNotNull($baseShit->getTwilioNumber(), "twilio number should not be null");
+        $this->assertNotNull($baseShit->getTextNumbers(), "text number should not be null");
         $this->assertNotNull($baseShit->getAuthToken(), "auth token should not be null");
         $this->assertNotNull($baseShit->getAccountSid(), "account sid should not be null");
     }
@@ -64,6 +64,7 @@ final class BaseShitTest extends TestCase
     }
 
     public function test_getMostRecentEventsOfEachType() {
+        // TODO: Handle lack of data in getMostRecentEventsOfEachType()
         $shit = new BaseShit($this->envFile);
         $results = $shit->getMostRecentEventsOfEachType();
 
@@ -83,26 +84,12 @@ final class BaseShitTest extends TestCase
         $this->assertEquals(1, $result, 'the number of callouts does not match expected');
     }
 
-    public function test_getAccountSid() {
-    }
-    // et al getters/setters...
-
-    public function test_getXDaysOfRecentEvents() {
-    }
-
-    public function test_getMaxAbsoluteValue() {
-    }
-
-    public function test_numberOfHealthChecksInLastXHours() {
-    }
-
-    public function test_hasHadRecentPumping() {
-    }
-
-    public function test_getRequestParam() {
-    }
-
     private function setupPdo() {
+        // No need to reinitialize the pdo between each test method
+        if ($this->pdo) {
+           return;
+        }
+
         $parsedEnvFile = file_get_contents($this->envFile);
         list($mysqlDatabase, $mysqlUsername, $mysqlPassword) = explode("\n", $parsedEnvFile);
         $this->pdo = new PDO("mysql:host=127.0.0.1;dbname=". $mysqlDatabase, $mysqlUsername, $mysqlPassword);
