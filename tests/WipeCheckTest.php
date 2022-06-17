@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/../lib/WipeCheck.class.php';
+require_once __DIR__ . '/../lib/WipeCheck.class.php';
 use PHPUnit\Framework\TestCase;
 
 final class WipeCheckTest extends TestCase

@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/lib/ShitShow.class.php';
+require_once __DIR__ . '/lib/ShitShow.class.php';
 
 /**
  * Other ideas:

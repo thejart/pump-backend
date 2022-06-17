@@ -1,6 +1,6 @@
 <?php
-require __DIR__ . '/../lib/ShitPumper.class.php';
-require __DIR__ . '/lib/FunctionalHelper.class.php';
+require_once __DIR__ . '/../lib/ShitPumper.class.php';
+require_once __DIR__ . '/lib/FunctionalHelper.class.php';
 use PHPUnit\Framework\TestCase;
 
 final class ShitPumperTest extends TestCase
