@@ -6,7 +6,7 @@ use Twilio\Rest\Client;
 
 if (!isset($argv[1])) {
     echo "Usage: /path/to/php /path/to/wipecheck.php /path/to/.env\n";
-    exit(1);
+    exit(0);
 }
 $envFullyQualifiedPath = $argv[1];
 

@@ -44,28 +44,23 @@ class BaseShit {
         }
     }
 
-    public function insertPumpEvent() {
+    public function insertPumpEvent($x, $y, $z, $type, $timestamp) {
         $query = $this->pdo->prepare("
             INSERT INTO pump_events
             (x_value, y_value, z_value, type, timestamp)
-            values (:x_value, :y_value, :z_value, :type, now())
+            values (:x_value, :y_value, :z_value, :type, :timestamp)
         ");
 
         try {
             $query->execute([
-                ':x_value' => $this->xValue,
-                ':y_value' => $this->yValue,
-                ':z_value' => $this->zValue,
-                ':type' => $this->type
+                ':x_value' => $x,
+                ':y_value' => $y,
+                ':z_value' => $z,
+                ':type' => $type,
+                ':timestamp' => $timestamp
             ]);
         } catch (PDOException $e) {
-            error_log("Unable to insert pump event x:{$this->xValue}, y:{$this->yValue}, z:{$this->zValue}, type:{$this->type}");
-            $query->execute([
-                ':x_value' => -1,
-                ':y_value' => -1,
-                ':z_value' => -1,
-                ':type' => self::EVENT_TYPE_ERROR
-            ]);
+            error_log("Unable to insert pump event x:{$x}, y:{$y}, z:{$z}, type:{$type}, timestamp:{$timestamp}");
         }
 
         if ($query->rowCount()) {
@@ -89,7 +84,7 @@ class BaseShit {
 
             $query->execute([':type' => $type]);
             $result = $query->fetchAll(PDO::FETCH_OBJ);
-            $results[$type] = $result[0]->timestamp;
+            $results[$type] = $query->rowCount() ? $result[0]->timestamp : null;
         }
 
         return $results;
@@ -169,14 +164,15 @@ class BaseShit {
     }
 
     protected function numberOfHealthChecksInLastXHours(int $numberOfHours) {
+        // Startup events are the initial healthcheck, so they should be included
         $query = $this->pdo->prepare("
             SELECT COUNT(*) AS count
             FROM pump_events
-            WHERE type=:type
+            WHERE (type=:startup OR type=:healthcheck)
             AND timestamp > DATE_SUB(NOW(), INTERVAL {$numberOfHours} HOUR)
         ");
 
-        $query->execute([':type' => self::EVENT_TYPE_HEALTHCHECK]);
+        $query->execute([':startup' => self::EVENT_TYPE_STARTUP, ':healthcheck' => self::EVENT_TYPE_HEALTHCHECK]);
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
@@ -193,7 +189,7 @@ class BaseShit {
     }
 
     protected function getRequestParam($field, $default = null) {
-        return isset($_REQUEST[$field]) ? $_REQUEST[$field] : $default;
+        return $_REQUEST[$field] ?? $default;
     }
 
     private function setupEnvironment($envFile) {
