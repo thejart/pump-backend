@@ -9,8 +9,8 @@ final class ShitShowTest extends TestCase
     public function test_constructor_hasNoTwilioSecrets() {
         $shitShow = new ShitShow($this->envFile);
 
-        $this->assertNull($shitShow->getTwilioNumbers(), "twilio number should be null");
-        $this->assertNull($shitShow->getTextNumber(), "text number should be null");
+        $this->assertNull($shitShow->getTwilioNumber(), "twilio number should be null");
+        $this->assertNull($shitShow->getTextNumbers(), "text number should be null");
         $this->assertNull($shitShow->getAuthToken(), "auth token should be null");
         $this->assertNull($shitShow->getAccountSid(), "account sid should be null");
     }
