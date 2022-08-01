@@ -36,6 +36,7 @@ The .env file contains all the personal data that needs to be kept out of source
 <mysql database>
 <mysql username>
 <mysql password>
+<pump/health call auth code>
 <twilio account sid>
 <twilio auth token>
 <twilio sender number>
