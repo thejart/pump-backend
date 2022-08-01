@@ -14,6 +14,9 @@ class BaseShit {
     /** @var PDO */
     private $pdo;
 
+    /** @var string */
+    protected $shitAuth;
+
     // Twilio Secrets
     /** @var string */
     private $account_sid;
@@ -26,10 +29,10 @@ class BaseShit {
 
     public function __construct($envFile, $shouldParseTwilioSecrets = false) {
         if ($shouldParseTwilioSecrets) {
-            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->account_sid, $this->auth_token, $this->twilio_number, $textNumbersString) = $this->setupEnvironment($envFile);
+            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->shitAuth, $this->account_sid, $this->auth_token, $this->twilio_number, $textNumbersString) = $this->setupEnvironment($envFile);
             $this->text_numbers = explode(",", $textNumbersString);
         } else {
-            list($mysqlDatabase, $mysqlUsername, $mysqlPassword) = $this->setupEnvironment($envFile);
+            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->shitAuth) = $this->setupEnvironment($envFile);
         }
 
         try {

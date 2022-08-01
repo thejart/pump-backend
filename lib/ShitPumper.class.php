@@ -7,6 +7,7 @@ class ShitPumper extends BaseShit {
     private $zValue;
     private $type;
     private $isTestCall = false;
+    private $authenticated = false;
 
     public function __construct($envFile) {
         parent::__construct($envFile);
@@ -18,6 +19,10 @@ class ShitPumper extends BaseShit {
         if (is_null($this->getRequestParam('x')) || is_null($this->getRequestParam('y')) || is_null($this->getRequestParam('z'))) {
             $this->isTestCall = true;
             return;
+        }
+
+        if (!is_null($this->getRequestParam('authCode')) && $this->getRequestParam('authCode') == $this->shitAuth) {
+            $this->authenticated = true;
         }
 
         $this->xValue = (float)$this->getRequestParam('x');
@@ -37,7 +42,7 @@ class ShitPumper extends BaseShit {
     }
 
     public function insertCurrentPumpEvent() {
-        if ($this->isTestCall) {
+        if ($this->isTestCall || !$this->authenticated) {
             return true;
         }
 
