@@ -23,16 +23,21 @@ class WipeCheck extends BaseShit {
         $totalCallouts = $this->getCurrentCalloutCount();
         $this->notifications = [];
 
-        if ($totalCallouts >= self::CALLOUT_LIMIT) {
-            $this->notifications[] = "Reaching callout limit";
-            $this->isAnAlert = true;
-        }
-        if (!$this->numberOfHealthChecksInLastXHours(self::HEALTHCHECK_THRESHOLD)) {
-            $this->notifications[] = "No recent healthcheck";
+        // The healthcheck runs hourly, the cron'd wipecheck job runs ever 12 hours.
+        // Taking the nano's imprecise clock into account, we should expect at least 11 checks
+        if ($this->numberOfHealthChecksInLastXHours(self::CRONJOB_FREQUENCY) < self::HEALTHCHECK_THRESHOLD) {
+            $this->notifications[] = "Too few healthchecks";
             $this->isAnAlert = true;
         }
         if (!$this->hasHadRecentPumping()) {
             $this->notifications[] = "No recent pumping";
+            $this->isAnAlert = true;
+        }
+
+        // This should only be a warning since the nano is programmed to reboot itself
+        // TODO: Update the send logic to handle warnings
+        if ($totalCallouts >= self::CALLOUT_LIMIT) {
+            $this->notifications[] = "Reaching callout limit";
             $this->isAnAlert = true;
         }
 
