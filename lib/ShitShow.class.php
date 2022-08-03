@@ -6,15 +6,15 @@ class ShitShow extends BaseShit {
     const THREE_MINUTES = 180;
 
     const BACKGROUND_OPTIONS = [
-        self::EVENT_TYPE_STARTUP =>         "rgba(54, 162, 235, 0.4)",  // blue
+        self::EVENT_TYPE_STARTUP =>         "rgba(97, 148, 49, 0.4)",   // green
         self::EVENT_TYPE_PUMPING =>         "rgba(139, 69, 19, 0.4)",   // brown
-        self::EVENT_TYPE_WASHING_MACHINE => "rgba(97, 148, 49, 0.4)",   // green
+        self::EVENT_TYPE_WASHING_MACHINE => "rgba(54, 162, 235, 0.4)",  // blue
         self::EVENT_TYPE_HEALTHCHECK =>     "rgba(201, 203, 207, 0.2)"  // grey
     ];
     const BORDER_OPTIONS = [
-        self::EVENT_TYPE_STARTUP =>         "rgb(54, 162, 235)",    // blue
+        self::EVENT_TYPE_STARTUP =>         "rgb(97, 148, 49)",     // green
         self::EVENT_TYPE_PUMPING =>         "rgb(139, 69, 19)",     // brown
-        self::EVENT_TYPE_WASHING_MACHINE => "rgb(97, 148, 49)",     // green
+        self::EVENT_TYPE_WASHING_MACHINE => "rgb(54, 162, 235)",    // blue
         self::EVENT_TYPE_HEALTHCHECK =>     "rgb(201, 203, 207)"    // grey
     ];
 
