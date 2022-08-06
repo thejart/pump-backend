@@ -7,9 +7,8 @@ class BaseShit {
     const EVENT_TYPE_WASHING_MACHINE = 4;
     const EVENT_TYPE_ERROR = 100;
 
-    const CALLOUT_LIMIT = 150;        // the nano 33 iot seems to crap out after X HTTP callouts (lately it's been ~150)
-    const CRONJOB_FREQUENCY = 12;     // the cron job runs every 12 hours
-    const HEALTHCHECK_THRESHOLD = 11; // we should expect at least 11 healthchecks within 12 hours (given the nano's imprecise clock)
+    const CRONJOB_PERIOD = 12;     // the cron job runs every 12 hours
+    const HEALTHCHECK_COUNT_THRESHOLD = 11; // we should expect at least 11 healthchecks within 12 hours (given the nano's imprecise clock)
     const PUMPING_THRESHOLD = 3;      // days (i.e. there should be a pumping event every 3 days under normal circumstances)
 
     /** @var PDO */
