@@ -41,7 +41,7 @@ class WipeCheck extends BaseShit {
             return true;
         }
 
-        // ...or send a summary
+        // ...or send a summary (if this is saturday morning)
         if ($this->day == 6 && $this->hour < 12) {
             $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
             $totalCallouts = $this->getCurrentCalloutCount();
