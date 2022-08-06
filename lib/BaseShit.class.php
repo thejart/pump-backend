@@ -5,11 +5,10 @@ class BaseShit {
     const EVENT_TYPE_PUMPING = 2;
     const EVENT_TYPE_HEALTHCHECK = 3;
     const EVENT_TYPE_WASHING_MACHINE = 4;
-    const EVENT_TYPE_ERROR = 100;
 
-    const CALLOUT_LIMIT = 250;        // the nano 33 iot seems to crap out around 300 HTTP callouts
-    const HEALTHCHECK_THRESHOLD = 13; // hours (i.e. the healthcheck should occur every 12 hours, plus some wiggle room)
-    const PUMPING_THRESHOLD = 3;      // days (i.e. there should be a pumping event every 3 days under normal circumstances)
+    const CRONJOB_PERIOD_IN_HOURS = 12;     // the cron job runs every 12 hours
+    const HEALTHCHECK_COUNT_THRESHOLD = 11; // we should expect at least 11 healthchecks within 12 hours (given the nano's imprecise clock)
+    const NO_PUMPING_THRESHOLD_IN_DAYS = 3; // days (i.e. there should be a pumping event every 3 days under normal circumstances)
 
     /** @var PDO */
     private $pdo;
@@ -184,7 +183,7 @@ class BaseShit {
             SELECT COUNT(*) AS count
             FROM pump_events
             WHERE type=:type
-            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::PUMPING_THRESHOLD . " DAY)
+            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::NO_PUMPING_THRESHOLD_IN_DAYS . " DAY)
         ");
 
         $query->execute([':type' => self::EVENT_TYPE_PUMPING]);

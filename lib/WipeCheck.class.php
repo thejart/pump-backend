@@ -20,19 +20,17 @@ class WipeCheck extends BaseShit {
     }
 
     public function shouldTextAlert() {
-        $totalCallouts = $this->getCurrentCalloutCount();
         $this->notifications = [];
+        $healthCheckCount = $this->numberOfHealthChecksInLastXHours(self::CRONJOB_PERIOD_IN_HOURS);
 
-        if ($totalCallouts >= self::CALLOUT_LIMIT) {
-            $this->notifications[] = "Reaching callout limit";
-            $this->isAnAlert = true;
-        }
-        if (!$this->numberOfHealthChecksInLastXHours(self::HEALTHCHECK_THRESHOLD)) {
-            $this->notifications[] = "No recent healthcheck";
+        // The healthcheck occurs hourly, the cron'd wipecheck job runs every 12 hours.
+        // Taking the nano's imprecise clock into account, we should expect at least 11 checks
+        if ($healthCheckCount < self::HEALTHCHECK_COUNT_THRESHOLD) {
+            $this->notifications[] = "Too few healthchecks (only {$healthCheckCount} in the past " . self::HEALTHCHECK_COUNT_THRESHOLD . " hours)";
             $this->isAnAlert = true;
         }
         if (!$this->hasHadRecentPumping()) {
-            $this->notifications[] = "No recent pumping";
+            $this->notifications[] = "No recent pump events in the past " . self::NO_PUMPING_THRESHOLD_IN_DAYS . " days";
             $this->isAnAlert = true;
         }
 
@@ -43,15 +41,13 @@ class WipeCheck extends BaseShit {
             return true;
         }
 
-        // ...or send a summary
+        // ...or send a summary (if this is saturday morning)
         if ($this->day == 6 && $this->hour < 12) {
-            $healthChecksInLastWeek = $this->numberOfHealthChecksInLastXHours(24 * 7);
             $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
+            $totalCallouts = $this->getCurrentCalloutCount();
 
-            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and" .
-                                     //" w/ Y inferred washing machine events) and" .
-                                     " {$healthChecksInLastWeek} health checks this week" .
-                                     " with {$totalCallouts} total HTTP requests";
+            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events in the past week and " .
+                                     "{$totalCallouts} total HTTP requests since reboot";
             error_log("[Notifying] " . implode("; ", $this->notifications));
             return true;
         }

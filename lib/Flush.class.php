@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/BaseShit.class.php';
 
-class ShitPumper extends BaseShit {
+class Flush extends BaseShit {
     private $xValue;
     private $yValue;
     private $zValue;
