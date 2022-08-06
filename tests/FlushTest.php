@@ -1,9 +1,9 @@
 <?php
-require_once __DIR__ . '/../lib/ShitPumper.class.php';
+require_once __DIR__ . '/../lib/Flush.class.php';
 require_once __DIR__ . '/lib/FunctionalHelper.class.php';
 use PHPUnit\Framework\TestCase;
 
-final class ShitPumperTest extends TestCase
+final class FlushTest extends TestCase
 {
     private $envFile = '.env.testing';
     private $helper;
@@ -25,7 +25,7 @@ final class ShitPumperTest extends TestCase
     }
 
     public function test_constructor_hasNoTwilioSecrets() {
-        $shitPumper = new ShitPumper($this->envFile);
+        $shitPumper = new Flush($this->envFile);
 
         $this->assertNull($shitPumper->getTwilioNumber(), "twilio number should be null");
         $this->assertNull($shitPumper->getTextNumbers(), "text number should be null");
@@ -36,7 +36,7 @@ final class ShitPumperTest extends TestCase
     public function test_insertCurrentPumpEvent_nonEvent() {
         $this->assertEquals(0, $this->helper->getTotalNumberOfEvents(), 'there should be zero events in the database');
 
-        $shit = new ShitPumper($this->envFile);
+        $shit = new Flush($this->envFile);
         $shit->insertCurrentPumpEvent();
 
         $this->assertEquals(0, $this->helper->getTotalNumberOfEvents(), 'there should be zero events in the database');
