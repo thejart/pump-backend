@@ -46,8 +46,8 @@ class WipeCheck extends BaseShit {
             $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
             $totalCallouts = $this->getCurrentCalloutCount();
 
-            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events in the past week and" .
-                                     " {$totalCallouts} total HTTP requests since reboot";
+            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events in the past week and " .
+                                     "{$totalCallouts} total HTTP requests since reboot";
             error_log("[Notifying] " . implode("; ", $this->notifications));
             return true;
         }
