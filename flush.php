@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/lib/ShitPumper.class.php';
+require_once __DIR__ . '/lib/Flush.class.php';
 
-$shitpumper = new ShitPumper('.env');
+$shitpumper = new Flush('.env');
 if ($shitpumper->insertCurrentPumpEvent()) {
     echo ":thumbsup:";
 } else {
