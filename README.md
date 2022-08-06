@@ -2,7 +2,7 @@
 So you've got yourself an Arduino board to monitor your evacuation pump and loaded the [pump monitor](https://github.com/thejart/pump-monitor) code on it? Congrats, that's half the equation! Now you need some backend code to monitor the monitor.
 
 ## Scripts Overview
-- `shitty.php` This is the endpoint that the pump monitor's HTTP request will hit. It's responsible for parsing out the query params, determining the type of request (startup, pumping or healthcheck) and inserting a row into a database table.
+- `flush.php` This is the endpoint that the pump monitor's HTTP request will hit. It's responsible for parsing out the query params, determining the type of request (startup, pumping or healthcheck) and inserting a row into a database table.
 - `shitshow.php` This is an endpoint used to display recent requests in a graph format (see below for more info).
 - `wipecheck.php` This is an optional script that should be cron'd. It will monitor recent usage and send a text message via Twilio (**Note:** You'll need an active account, which they offer for free) if any thresholds have been met.
 
