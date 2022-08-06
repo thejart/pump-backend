@@ -5,11 +5,10 @@ class BaseShit {
     const EVENT_TYPE_PUMPING = 2;
     const EVENT_TYPE_HEALTHCHECK = 3;
     const EVENT_TYPE_WASHING_MACHINE = 4;
-    const EVENT_TYPE_ERROR = 100;
 
-    const CRONJOB_PERIOD = 12;     // the cron job runs every 12 hours
+    const CRONJOB_PERIOD_IN_HOURS = 12;     // the cron job runs every 12 hours
     const HEALTHCHECK_COUNT_THRESHOLD = 11; // we should expect at least 11 healthchecks within 12 hours (given the nano's imprecise clock)
-    const PUMPING_THRESHOLD = 3;      // days (i.e. there should be a pumping event every 3 days under normal circumstances)
+    const NO_PUMPING_THRESHOLD_IN_DAYS = 3; // days (i.e. there should be a pumping event every 3 days under normal circumstances)
 
     /** @var PDO */
     private $pdo;
@@ -184,7 +183,7 @@ class BaseShit {
             SELECT COUNT(*) AS count
             FROM pump_events
             WHERE type=:type
-            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::PUMPING_THRESHOLD . " DAY)
+            AND timestamp > DATE_SUB(NOW(), INTERVAL " . self::NO_PUMPING_THRESHOLD_IN_DAYS . " DAY)
         ");
 
         $query->execute([':type' => self::EVENT_TYPE_PUMPING]);

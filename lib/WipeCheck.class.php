@@ -20,17 +20,17 @@ class WipeCheck extends BaseShit {
     }
 
     public function shouldTextAlert() {
-        $totalCallouts = $this->getCurrentCalloutCount();
         $this->notifications = [];
+        $healthCheckCount = $this->numberOfHealthChecksInLastXHours(self::CRONJOB_PERIOD_IN_HOURS);
 
         // The healthcheck occurs hourly, the cron'd wipecheck job runs every 12 hours.
         // Taking the nano's imprecise clock into account, we should expect at least 11 checks
-        if ($this->numberOfHealthChecksInLastXHours(self::CRONJOB_PERIOD) < self::HEALTHCHECK_COUNT_THRESHOLD) {
-            $this->notifications[] = "Too few healthchecks";
+        if ($healthCheckCount < self::HEALTHCHECK_COUNT_THRESHOLD) {
+            $this->notifications[] = "Too few healthchecks (only {$healthCheckCount} in the past " . self::HEALTHCHECK_COUNT_THRESHOLD . " hours)";
             $this->isAnAlert = true;
         }
         if (!$this->hasHadRecentPumping()) {
-            $this->notifications[] = "No recent pump events";
+            $this->notifications[] = "No recent pump events in the past " . self::NO_PUMPING_THRESHOLD_IN_DAYS . " days";
             $this->isAnAlert = true;
         }
 
@@ -44,6 +44,7 @@ class WipeCheck extends BaseShit {
         // ...or send a summary
         if ($this->day == 6 && $this->hour < 12) {
             $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
+            $totalCallouts = $this->getCurrentCalloutCount();
 
             $this->notifications[] = "{$numberOfEventsInLastWeek} pump events in the past week and" .
                                      " {$totalCallouts} total HTTP requests since reboot";
