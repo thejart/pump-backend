@@ -12,7 +12,7 @@ class WipeCheck extends BaseShit {
     private $day;
 
     public function __construct($envFile) {
-        error_log("Wipe log: " . date('Y-m-d h:i:s'));
+        error_log("Wipe log: " . date('Y-m-d H:i:s'));
 
         parent::__construct($envFile, true);
         $this->hour = (int)date("H"); // 00 through 23
