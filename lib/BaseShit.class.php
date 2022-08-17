@@ -92,7 +92,7 @@ class BaseShit {
         return $results;
     }
 
-    public function getCurrentCalloutCount() {
+    public function getCalloutCountSinceReboot() {
         $query = $this->pdo->prepare("
             SELECT COUNT(*) as count
             FROM pump_events
