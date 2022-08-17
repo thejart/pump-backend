@@ -21,6 +21,19 @@ class WipeCheck extends BaseShit {
 
     public function shouldTextAlert() {
         $this->notifications = [];
+
+        // If this is a weekly job run, prepare a summary message and exit method
+        if ($this->day == 6 && $this->hour < 12) {
+            $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
+            $totalCallouts = $this->getCurrentCalloutCount();
+
+            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events in the past week and " .
+                "{$totalCallouts} total HTTP requests since reboot";
+            error_log("[Notifying] " . implode("; ", $this->notifications));
+            return true;
+        }
+
+        // ...otherwise we're checking for alert-worthy events since the last, relatively frequent job run
         $healthCheckCount = $this->numberOfHealthChecksInLastXHours(self::CRONJOB_PERIOD_IN_HOURS);
 
         // The healthcheck occurs hourly, the cron'd wipecheck job runs every 12 hours.
@@ -29,30 +42,19 @@ class WipeCheck extends BaseShit {
             $this->notifications[] = "Too few healthchecks (only {$healthCheckCount} in the past " . self::HEALTHCHECK_COUNT_THRESHOLD . " hours)";
             $this->isAnAlert = true;
         }
+
         if (!$this->hasHadRecentPumping()) {
             $this->notifications[] = "No recent pump events in the past " . self::NO_PUMPING_THRESHOLD_IN_DAYS . " days";
             $this->isAnAlert = true;
         }
 
-        // Send an alert
-        if ($this->isAnAlert) {
+        // Log alert notifications
+        if (!empty($this->notifications)) {
             // No need for a summary, get the alert out
             error_log("[ALERTING] " . implode("; ", $this->notifications));
-            return true;
         }
 
-        // ...or send a summary (if this is saturday morning)
-        if ($this->day == 6 && $this->hour < 12) {
-            $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
-            $totalCallouts = $this->getCurrentCalloutCount();
-
-            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events in the past week and " .
-                                     "{$totalCallouts} total HTTP requests since reboot";
-            error_log("[Notifying] " . implode("; ", $this->notifications));
-            return true;
-        }
-
-        return false;
+        return $this->isAnAlert;
     }
 
     public function getMessage() {
