@@ -27,11 +27,13 @@ class WipeCheck extends BaseShit {
         // If this is a weekly job run, prepare a summary message and exit method
         if ($this->day == 6 && $this->hour < 12) {
             $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_CADENCE_IN_DAYS));
-            $totalCallouts = $this->getCalloutCountSinceReboot();
+            $currentCallouts = $this->getCalloutCountSinceReboot();
             $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
+            $daysBetweenRecentReboots = $this->getNumberOfDaysBetweenRecentReboots();
 
-            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and {$totalReboots} reboots this past week.\n" .
-                "({$totalCallouts} HTTP requests since reboot)";
+            $this->notifications[] = "{$totalReboots} reboots and {$numberOfEventsInLastWeek} pump events this week.\n" .
+                "{$daysBetweenRecentReboots} days between recent reboots";
+                //"{$currentCallouts} HTTP requests since reboot";
             error_log("[Notifying] " . implode("; ", $this->notifications));
             return true;
         }
