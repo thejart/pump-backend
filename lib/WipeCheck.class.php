@@ -30,8 +30,8 @@ class WipeCheck extends BaseShit {
             $totalCallouts = $this->getCalloutCountSinceReboot();
             $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
 
-            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and {$totalReboots} reboots in the past week, " .
-                "{$totalCallouts} total HTTP requests since reboot";
+            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and {$totalReboots} reboots this past week. " .
+                "({$totalCallouts} HTTP requests since reboot)";
             error_log("[Notifying] " . implode("; ", $this->notifications));
             return true;
         }
