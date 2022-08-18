@@ -93,6 +93,17 @@ final class BaseShitTest extends TestCase
         $this->assertEquals($recentHealthcheckTimestamp, $results[BaseShit::EVENT_TYPE_HEALTHCHECK], 'healthcheck fail');
     }
 
+    public function test_getRebootCountInXDays_noData() {
+        $shit = new BaseShit($this->envFile);
+        $result = $shit->getRebootCountInXDays(7);
+
+        $this->assertEquals(0, $result, 'there should be zero reboots');
+    }
+
+    public function test_getRebootCountInXDays() {
+        // TODO: Write this...also convert most of the protected methods in BaseShit to public and write tests for them too
+    }
+
     public function test_getCalloutCountSinceReboot_noData() {
         $shit = new BaseShit($this->envFile);
         $result = $shit->getCalloutCountSinceReboot();
