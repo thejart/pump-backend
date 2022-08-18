@@ -30,7 +30,7 @@ class WipeCheck extends BaseShit {
             $totalCallouts = $this->getCalloutCountSinceReboot();
             $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
 
-            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and {$totalReboots} reboots this past week. " .
+            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and {$totalReboots} reboots this past week.\n" .
                 "({$totalCallouts} HTTP requests since reboot)";
             error_log("[Notifying] " . implode("; ", $this->notifications));
             return true;
@@ -62,9 +62,9 @@ class WipeCheck extends BaseShit {
 
     public function getMessage() {
         if ($this->isAnAlert) {
-            return "[POOP ALERT!] " . implode('; ', $this->notifications);
+            return "[POOP ALERT!]\n" . implode('; ', $this->notifications);
         } else {
-            return "[poop summary] " . implode('; ', $this->notifications);
+            return "[poop summary]\n" . implode('; ', $this->notifications);
         }
     }
 }
