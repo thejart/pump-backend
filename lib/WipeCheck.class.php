@@ -28,7 +28,7 @@ class WipeCheck extends BaseShit {
         if ($this->day == 6 && $this->hour < 12) {
             $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_PERIOD_IN_DAYS));
             $totalCallouts = $this->getCalloutCountSinceReboot();
-            $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_PERIOD_IN_DAYS)
+            $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_PERIOD_IN_DAYS);
 
             $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and {$totalReboots} reboots in the past week, " .
                 "{$totalCallouts} total HTTP requests since reboot";
