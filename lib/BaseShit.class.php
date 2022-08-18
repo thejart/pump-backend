@@ -92,6 +92,18 @@ class BaseShit {
         return $results;
     }
 
+    public function getRebootCountInXDays(int $numberOfDays) {
+        $query = $this->pdo->prepare("
+            SELECT COUNT(*) as count
+            FROM pump_events
+            WHERE type=1
+            AND timestamp >= DATE_SUB(NOW(), INTERVAL {$numberOfDays} DAY)
+        ");
+
+        $query->execute();
+        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
+    }
+
     public function getCalloutCountSinceReboot() {
         $query = $this->pdo->prepare("
             SELECT COUNT(*) as count
