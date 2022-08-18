@@ -159,25 +159,46 @@ class BaseShit {
         return $query->fetchAll(PDO::FETCH_OBJ);
     }
 
-    protected function getNumberOfDaysBetweenRecentReboots() {
+    protected function getRecentCycleStats() {
         $currentRebootTimestamp = $this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP];
+        $previousRebootTimestamp = $this->getPreviousRebootTimestamp($currentRebootTimestamp);
+        $eventCount = $this->getEventCountBetweenTimestamps($previousRebootTimestamp, $currentRebootTimestamp);
 
         $query = $this->pdo->prepare("
-            SELECT DATEDIFF(
-                '{$currentRebootTimestamp}',
-                (
-                    SELECT timestamp
-                    FROM pump_events
-                    WHERE timestamp < '{$currentRebootTimestamp}'
-                    AND type=1
-                    ORDER BY timestamp DESC
-                    LIMIT 1
-                )
-            ) AS days
+            SELECT DATEDIFF('{$currentRebootTimestamp}', '{$previousRebootTimestamp}') AS days
         ");
 
         $query->execute();
-        return $query->fetchAll(PDO::FETCH_OBJ)[0]->days;
+        return [
+            'daysBetweenReboots' => $query->fetchAll(PDO::FETCH_OBJ)[0]->days,
+            'eventCount' => $eventCount
+        ];
+    }
+
+    protected function getPreviousRebootTimestamp($rebootTimestamp) {
+        $query = $this->pdo->prepare("
+            SELECT timestamp
+            FROM pump_events
+            WHERE timestamp < '{$rebootTimestamp}'
+            AND type=1
+            ORDER BY timestamp DESC
+            LIMIT 1
+        ");
+
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_OBJ)[0]->timestamp;
+    }
+
+    protected function getEventCountBetweenTimestamps($earlierTimestamp, $laterTimestamp) {
+        $query = $this->pdo->prepare("
+            SELECT COUNT(*) AS count
+            FROM pump_events
+            WHERE timestamp >= '{$earlierTimestamp}'
+            AND timestamp < '{$laterTimestamp}'
+        ");
+
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
     protected function getMaxAbsoluteValue($event) {
