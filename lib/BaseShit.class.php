@@ -159,6 +159,27 @@ class BaseShit {
         return $query->fetchAll(PDO::FETCH_OBJ);
     }
 
+    protected function getNumberOfDaysBetweenRecentReboots() {
+        $currentRebootTimestamp = $this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP];
+
+        $query = $this->pdo->prepare("
+            SELECT DATEDIFF(
+                '{$currentRebootTimestamp}',
+                (
+                    SELECT timestamp
+                    FROM pump_events
+                    WHERE timestamp < '{$currentRebootTimestamp}'
+                    AND type=1
+                    ORDER BY timestamp DESC
+                    LIMIT 1
+                )
+            ) AS days
+        ");
+
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_OBJ)[0]->days;
+    }
+
     protected function getMaxAbsoluteValue($event) {
         // Startup and Healthcheck events have their gryoscopic data overwritten for visual aesthetic
         if ($event->type == self::EVENT_TYPE_STARTUP) {
