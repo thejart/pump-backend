@@ -6,7 +6,7 @@ class BaseShit {
     const EVENT_TYPE_HEALTHCHECK = 3;
     const EVENT_TYPE_WASHING_MACHINE = 4;
 
-    const CRONJOB_PERIOD_IN_HOURS = 12;     // the cron job runs every 12 hours
+    const CRONJOB_CADENCE_IN_HOURS = 12;     // the cron job runs every 12 hours
     const HEALTHCHECK_COUNT_THRESHOLD = 11; // we should expect at least 11 healthchecks within 12 hours (given the nano's imprecise clock)
     const NO_PUMPING_THRESHOLD_IN_DAYS = 3; // days (i.e. there should be a pumping event every 3 days under normal circumstances)
 

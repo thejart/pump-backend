@@ -2,7 +2,7 @@
 require_once __DIR__ . '/BaseShit.class.php';
 
 class WipeCheck extends BaseShit {
-    const SUMMARY_TEXT_PERIOD_IN_DAYS = 7;
+    const SUMMARY_TEXT_CADENCE_IN_DAYS = 7;
 
     /** @var bool */
     private $isAnAlert = false;
@@ -26,9 +26,9 @@ class WipeCheck extends BaseShit {
 
         // If this is a weekly job run, prepare a summary message and exit method
         if ($this->day == 6 && $this->hour < 12) {
-            $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_PERIOD_IN_DAYS));
+            $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_CADENCE_IN_DAYS));
             $totalCallouts = $this->getCalloutCountSinceReboot();
-            $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_PERIOD_IN_DAYS);
+            $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
 
             $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and {$totalReboots} reboots in the past week, " .
                 "{$totalCallouts} total HTTP requests since reboot";
@@ -37,7 +37,7 @@ class WipeCheck extends BaseShit {
         }
 
         // ...otherwise we're checking for alert-worthy events since the last, relatively frequent job run
-        $healthCheckCount = $this->numberOfHealthChecksInLastXHours(self::CRONJOB_PERIOD_IN_HOURS);
+        $healthCheckCount = $this->numberOfHealthChecksInLastXHours(self::CRONJOB_CADENCE_IN_HOURS);
 
         // The healthcheck occurs hourly, the cron'd wipecheck job runs every 12 hours.
         // Taking the nano's imprecise clock into account, we should expect at least 11 checks
