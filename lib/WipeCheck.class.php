@@ -2,6 +2,8 @@
 require_once __DIR__ . '/BaseShit.class.php';
 
 class WipeCheck extends BaseShit {
+    const SUMMARY_TEXT_PERIOD_IN_DAYS = 7;
+
     /** @var bool */
     private $isAnAlert = false;
     /** @var array */
@@ -24,9 +26,9 @@ class WipeCheck extends BaseShit {
 
         // If this is a weekly job run, prepare a summary message and exit method
         if ($this->day == 6 && $this->hour < 12) {
-            $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
+            $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_PERIOD_IN_DAYS));
             $totalCallouts = $this->getCalloutCountSinceReboot();
-            $totalReboots = $this->getRebootCountInXDays(7)
+            $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_PERIOD_IN_DAYS)
 
             $this->notifications[] = "{$numberOfEventsInLastWeek} pump events and {$totalReboots} reboots in the past week, " .
                 "{$totalCallouts} total HTTP requests since reboot";
