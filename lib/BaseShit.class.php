@@ -6,7 +6,7 @@ class BaseShit {
     const EVENT_TYPE_HEALTHCHECK = 3;
     const EVENT_TYPE_WASHING_MACHINE = 4;
 
-    const CRONJOB_PERIOD_IN_HOURS = 12;     // the cron job runs every 12 hours
+    const CRONJOB_CADENCE_IN_HOURS = 12;     // the cron job runs every 12 hours
     const HEALTHCHECK_COUNT_THRESHOLD = 11; // we should expect at least 11 healthchecks within 12 hours (given the nano's imprecise clock)
     const NO_PUMPING_THRESHOLD_IN_DAYS = 3; // days (i.e. there should be a pumping event every 3 days under normal circumstances)
 
@@ -92,7 +92,19 @@ class BaseShit {
         return $results;
     }
 
-    public function getCurrentCalloutCount() {
+    public function getRebootCountInXDays(int $numberOfDays) {
+        $query = $this->pdo->prepare("
+            SELECT COUNT(*) as count
+            FROM pump_events
+            WHERE type=1
+            AND timestamp >= DATE_SUB(NOW(), INTERVAL {$numberOfDays} DAY)
+        ");
+
+        $query->execute();
+        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
+    }
+
+    public function getCalloutCountSinceReboot() {
         $query = $this->pdo->prepare("
             SELECT COUNT(*) as count
             FROM pump_events
@@ -145,6 +157,48 @@ class BaseShit {
 
         $query->execute();
         return $query->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    protected function getRecentCycleStats() {
+        $currentRebootTimestamp = $this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP];
+        $previousRebootTimestamp = $this->getPreviousRebootTimestamp($currentRebootTimestamp);
+        $eventCount = $this->getEventCountBetweenTimestamps($previousRebootTimestamp, $currentRebootTimestamp);
+
+        $query = $this->pdo->prepare("
+            SELECT DATEDIFF('{$currentRebootTimestamp}', '{$previousRebootTimestamp}') AS days
+        ");
+
+        $query->execute();
+        return [
+            'daysBetweenReboots' => $query->fetchAll(PDO::FETCH_OBJ)[0]->days,
+            'eventCount' => $eventCount
+        ];
+    }
+
+    protected function getPreviousRebootTimestamp($rebootTimestamp) {
+        $query = $this->pdo->prepare("
+            SELECT timestamp
+            FROM pump_events
+            WHERE timestamp < '{$rebootTimestamp}'
+            AND type=1
+            ORDER BY timestamp DESC
+            LIMIT 1
+        ");
+
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_OBJ)[0]->timestamp;
+    }
+
+    protected function getEventCountBetweenTimestamps($earlierTimestamp, $laterTimestamp) {
+        $query = $this->pdo->prepare("
+            SELECT COUNT(*) AS count
+            FROM pump_events
+            WHERE timestamp >= '{$earlierTimestamp}'
+            AND timestamp < '{$laterTimestamp}'
+        ");
+
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
     protected function getMaxAbsoluteValue($event) {

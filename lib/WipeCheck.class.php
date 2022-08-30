@@ -2,6 +2,8 @@
 require_once __DIR__ . '/BaseShit.class.php';
 
 class WipeCheck extends BaseShit {
+    const SUMMARY_TEXT_CADENCE_IN_DAYS = 7;
+
     /** @var bool */
     private $isAnAlert = false;
     /** @var array */
@@ -12,7 +14,7 @@ class WipeCheck extends BaseShit {
     private $day;
 
     public function __construct($envFile) {
-        error_log("Wipe log: " . date('Y-m-d h:i:s'));
+        error_log("Wipe log: " . date('Y-m-d H:i:s'));
 
         parent::__construct($envFile, true);
         $this->hour = (int)date("H"); // 00 through 23
@@ -21,7 +23,21 @@ class WipeCheck extends BaseShit {
 
     public function shouldTextAlert() {
         $this->notifications = [];
-        $healthCheckCount = $this->numberOfHealthChecksInLastXHours(self::CRONJOB_PERIOD_IN_HOURS);
+
+        // If this is a weekly job run, prepare a summary message and exit method
+        if ($this->day == 6 && $this->hour < 12) {
+            $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_CADENCE_IN_DAYS));
+            $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
+            $cycleStats = $this->getRecentCycleStats();
+
+            $this->notifications[] = "{$totalReboots} reboots and {$numberOfEventsInLastWeek} pump events this week.\n" .
+                "{$cycleStats['daysBetweenReboots']} days between recent reboots after {$cycleStats['eventCount']} events";
+            error_log("[Notifying] " . implode("; ", $this->notifications));
+            return true;
+        }
+
+        // ...otherwise we're checking for alert-worthy events since the last, relatively frequent job run
+        $healthCheckCount = $this->numberOfHealthChecksInLastXHours(self::CRONJOB_CADENCE_IN_HOURS);
 
         // The healthcheck occurs hourly, the cron'd wipecheck job runs every 12 hours.
         // Taking the nano's imprecise clock into account, we should expect at least 11 checks
@@ -29,37 +45,26 @@ class WipeCheck extends BaseShit {
             $this->notifications[] = "Too few healthchecks (only {$healthCheckCount} in the past " . self::HEALTHCHECK_COUNT_THRESHOLD . " hours)";
             $this->isAnAlert = true;
         }
+
         if (!$this->hasHadRecentPumping()) {
             $this->notifications[] = "No recent pump events in the past " . self::NO_PUMPING_THRESHOLD_IN_DAYS . " days";
             $this->isAnAlert = true;
         }
 
-        // Send an alert
-        if ($this->isAnAlert) {
+        // Log alert notifications
+        if (!empty($this->notifications)) {
             // No need for a summary, get the alert out
             error_log("[ALERTING] " . implode("; ", $this->notifications));
-            return true;
         }
 
-        // ...or send a summary (if this is saturday morning)
-        if ($this->day == 6 && $this->hour < 12) {
-            $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(7));
-            $totalCallouts = $this->getCurrentCalloutCount();
-
-            $this->notifications[] = "{$numberOfEventsInLastWeek} pump events in the past week and " .
-                                     "{$totalCallouts} total HTTP requests since reboot";
-            error_log("[Notifying] " . implode("; ", $this->notifications));
-            return true;
-        }
-
-        return false;
+        return $this->isAnAlert;
     }
 
     public function getMessage() {
         if ($this->isAnAlert) {
-            return "[POOP ALERT!] " . implode('; ', $this->notifications);
+            return "[POOP ALERT!]\n" . implode('; ', $this->notifications);
         } else {
-            return "[poop summary] " . implode('; ', $this->notifications);
+            return "[poop summary]\n" . implode('; ', $this->notifications);
         }
     }
 }

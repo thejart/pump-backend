@@ -10,7 +10,7 @@ require_once __DIR__ . '/lib/ShitShow.class.php';
  */
 $shitShow = new ShitShow('.env');
 $recentEpoch = $shitShow->getMostRecentEventsOfEachType()[ShitShow::EVENT_TYPE_STARTUP];
-$calloutCount = $shitShow->getCurrentCalloutCount();
+$calloutCount = $shitShow->getCalloutCountSinceReboot();
 list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
 list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachineEvents($pumpingData);
 

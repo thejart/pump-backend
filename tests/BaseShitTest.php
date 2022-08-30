@@ -93,15 +93,26 @@ final class BaseShitTest extends TestCase
         $this->assertEquals($recentHealthcheckTimestamp, $results[BaseShit::EVENT_TYPE_HEALTHCHECK], 'healthcheck fail');
     }
 
-    public function test_getCurrentCalloutCount_noData() {
+    public function test_getRebootCountInXDays_noData() {
         $shit = new BaseShit($this->envFile);
-        $result = $shit->getCurrentCalloutCount();
+        $result = $shit->getRebootCountInXDays(7);
+
+        $this->assertEquals(0, $result, 'there should be zero reboots');
+    }
+
+    public function test_getRebootCountInXDays() {
+        // TODO: Write this...also convert most of the protected methods in BaseShit to public and write tests for them too
+    }
+
+    public function test_getCalloutCountSinceReboot_noData() {
+        $shit = new BaseShit($this->envFile);
+        $result = $shit->getCalloutCountSinceReboot();
 
         $this->assertEquals(0, $result, 'there should be zero callouts');
     }
 
-    public function test_getCurrentCalloutCount() {
-        // getCurrentCalloutCount() should count all pump events that have occurred since, and including, the most recent
+    public function test_getCalloutCountSinceReboot() {
+        // getCalloutCountSinceReboot() should count all pump events that have occurred since, and including, the most recent
         // startup event. no events before that should be counted.
         $recentStartupTimestamp = $this->helper->unixTimestampToDbFormat(strtotime('-9 minute'));
         $recentHealthcheckTimestamp = $this->helper->unixTimestampToDbFormat(strtotime('-8 minute'));
@@ -109,7 +120,7 @@ final class BaseShitTest extends TestCase
         $this->createTwoCyclesOfFixtureData($recentStartupTimestamp, $recentHealthcheckTimestamp, $recentPumpingTimestamp);
 
         $shit = new BaseShit($this->envFile);
-        $result = $shit->getCurrentCalloutCount();
+        $result = $shit->getCalloutCountSinceReboot();
 
         $this->assertEquals(3, $result, 'the number of callouts does not match expected');
     }
