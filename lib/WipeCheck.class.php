@@ -42,7 +42,7 @@ class WipeCheck extends BaseShit {
         // The healthcheck occurs hourly, the cron'd wipecheck job runs every 12 hours.
         // Taking the nano's imprecise clock into account, we should expect at least 11 checks
         if ($healthCheckCount < self::HEALTHCHECK_COUNT_THRESHOLD) {
-            $this->notifications[] = "Too few healthchecks (only {$healthCheckCount} in the past " . self::HEALTHCHECK_COUNT_THRESHOLD . " hours)";
+            $this->notifications[] = "Too few healthchecks (only {$healthCheckCount} in the past " . self::CRONJOB_CADENCE_IN_HOURS . " hours)";
             $this->isAnAlert = true;
         }
 
