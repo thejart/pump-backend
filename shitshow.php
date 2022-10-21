@@ -14,6 +14,10 @@ $calloutCount = $shitShow->getCalloutCountSinceReboot();
 list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
 list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachineEvents($pumpingData);
 
+if ($shitShow->isMysqlDown) {
+    echo "MySQL is down!";
+    exit;
+}
 ?>
 <!doctype html>
 <html lang="en">
