@@ -21,5 +21,5 @@ final class WipeCheckTest extends TestCase
         $this->assertEquals("[poop summary] ", $wipeCheck->getMessage(), "message didn't match expected");
     }
 
-    // TODO: test shouldTextAlert()
+    // TODO: test shouldText()
 }

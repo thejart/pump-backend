@@ -21,8 +21,14 @@ class WipeCheck extends BaseShit {
         $this->day = (int)date("N");  // 1 through 7, Mon through Sun
     }
 
-    public function shouldTextAlert() {
+    public function shouldText() {
         $this->notifications = [];
+
+        if ($this->isMysqlDown) {
+            $this->isAnAlert = true;
+            $this->notifications[] = "MySQL is down!";
+            return true;
+        }
 
         // If this is a weekly job run, prepare a summary message and exit method
         if ($this->day == 6 && $this->hour < 12) {
