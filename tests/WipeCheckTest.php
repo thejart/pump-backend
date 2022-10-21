@@ -18,8 +18,8 @@ final class WipeCheckTest extends TestCase
     public function test_getMessage() {
         $wipeCheck = new WipeCheck($this->envFile);
 
-        $this->assertEquals("[poop summary] ", $wipeCheck->getMessage(), "message didn't match expected");
+        $this->assertEquals("[poop summary]\n", $wipeCheck->getMessage(), "message didn't match expected");
     }
 
-    // TODO: test shouldTextAlert()
+    // TODO: test shouldText()
 }

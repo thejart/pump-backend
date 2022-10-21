@@ -11,7 +11,7 @@ if (!isset($argv[1])) {
 $envFullyQualifiedPath = $argv[1];
 
 $wipeCheck = new WipeCheck($envFullyQualifiedPath);
-if ($wipeCheck->shouldTextAlert()) {
+if ($wipeCheck->shouldText()) {
     $client = new Client($wipeCheck->getAccountSid(), $wipeCheck->getAuthToken());
 
     foreach ($wipeCheck->getTextNumbers() as $textNumber) {

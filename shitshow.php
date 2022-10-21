@@ -9,6 +9,11 @@ require_once __DIR__ . '/lib/ShitShow.class.php';
  *   - Pumping hasn't happened in X days(?)
  */
 $shitShow = new ShitShow('.env');
+if ($shitShow->isMysqlDown) {
+    echo "MySQL is down!";
+    exit;
+}
+
 $recentEpoch = $shitShow->getMostRecentEventsOfEachType()[ShitShow::EVENT_TYPE_STARTUP];
 $calloutCount = $shitShow->getCalloutCountSinceReboot();
 list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
