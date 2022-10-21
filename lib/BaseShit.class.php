@@ -43,10 +43,6 @@ class BaseShit {
         } catch (Exception $e) {
             $this->isMysqlDown = true;
             error_log("Unable to connect to the database");
-            // Seems hacky, but tests gotta test
-            if (strpos($envFile, 'testing') !== false) {
-                exit;
-            }
         }
     }
 
