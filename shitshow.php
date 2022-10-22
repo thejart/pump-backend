@@ -29,6 +29,8 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-moment/1.0.0/chartjs-adapter-moment.js"></script>
 
@@ -98,6 +100,25 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
             title: {
               display: true,
               text: title
+            },
+            zoom: {
+              zoom: {
+                wheel: {
+                  enabled: true
+                },
+                pinch: {
+                  enabled: true
+                },
+                mode: 'x',
+                drag: {
+                  enabled: true,
+                  modifierKey: 'shift'
+                }
+              },
+              pan: {
+                enabled: true,
+                mode: 'x'
+              }
             }
           },
           scales: {
@@ -112,7 +133,7 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
               }
             }
           }
-        },
+        }
       };
 
       window.onload = function() {
