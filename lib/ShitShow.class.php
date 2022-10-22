@@ -27,7 +27,7 @@ class ShitShow extends BaseShit {
 
     public function __construct($envFile) {
         parent::__construct($envFile);
-        $this->viewWindow = (int)$this->getRequestParam('days', 7);
+        $this->viewWindow = (int)$this->getRequestParam('days', 30);
         $this->viewDeducedEvents = (bool)$this->getRequestParam('deduced', true);
         $this->filename = $_SERVER['SCRIPT_NAME'];
     }
