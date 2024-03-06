@@ -2,8 +2,8 @@
 require_once __DIR__ . '/BaseShit.class.php';
 
 class ShitShow extends BaseShit {
-    const FIFTEEN_MINUTES = 900;
-    const THREE_MINUTES = 180;
+    const FIFTEEN_MINUTES = 900000; // in milliseconds
+    const THREE_MINUTES = 180000;   // in milliseconds
 
     const BACKGROUND_OPTIONS = [
         self::EVENT_TYPE_STARTUP =>         "rgba(97, 148, 49, 0.4)",   // green
@@ -36,10 +36,12 @@ class ShitShow extends BaseShit {
         $startupData = [];
         $pumpingData = [];
         $healthcheckData = [];
+        $start = null;
+        $end = null;
 
         foreach ($this->getXDaysOfRecentEvents($this->viewWindow) as $event) {
             $graphedDatum = new stdClass();
-            $graphedDatum->x = $event->timestamp;
+            $graphedDatum->x = (int)$event->timestamp;
             $graphedDatum->y = $this->getMaxAbsoluteValue($event);
 
             if ($event->type == self::EVENT_TYPE_STARTUP) {
@@ -49,9 +51,14 @@ class ShitShow extends BaseShit {
             } else {
                 $healthcheckData[] = $graphedDatum;
             }
+
+            if (!$start) {
+                $start = $graphedDatum->x;
+            }
+            $end = $graphedDatum->x;
         }
 
-        return [$startupData, $pumpingData, $healthcheckData];
+        return [$startupData, $pumpingData, $healthcheckData, $start, $end];
     }
 
     public function getBackgroundColor($type) {
@@ -92,8 +99,8 @@ class ShitShow extends BaseShit {
 
             // if event[i+2] is within 15 minutes of event[i] AND event[i+1] is within 3 minutes of event[i],
             // we probably have a washing machine event
-            if (strtotime($events[$i+2]->x) - strtotime($event->x) <= self::FIFTEEN_MINUTES &&
-                strtotime($events[$i+1]->x) - strtotime($event->x) <= self::THREE_MINUTES) {
+            if ($events[$i+2]->x - $event->x <= self::FIFTEEN_MINUTES &&
+                $events[$i+1]->x - $event->x <= self::THREE_MINUTES) {
                 $washingEvents[] = $event;
                 $skipEventCounter = 2;
             } else {

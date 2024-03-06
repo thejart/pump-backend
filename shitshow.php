@@ -16,7 +16,7 @@ if ($shitShow->isMysqlDown) {
 
 $recentEpoch = $shitShow->getMostRecentEventsOfEachType()[ShitShow::EVENT_TYPE_STARTUP];
 $calloutCount = $shitShow->getCalloutCountSinceReboot();
-list($startupData, $pumpingData, $healthcheckData) = $shitShow->getChartData();
+list($startupData, $pumpingData, $healthcheckData, $start, $end) = $shitShow->getChartData();
 list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachineEvents($pumpingData);
 
 ?>
@@ -35,6 +35,8 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-moment/1.0.0/chartjs-adapter-moment.js"></script>
 
     <script type='text/javascript'>
+      let myChart;
+
       const hourFormat = 'MM/DD HH:mm';
       const dateFormat = 'ddd, MMM DD';
       const recentEpochString = moment('<?php echo $recentEpoch; ?>').fromNow();
@@ -102,14 +104,18 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
               text: title
             },
             zoom: {
+              limits: {
+                x: {min: <?php echo $start?>, max: <?php echo $end?>, minRange: 86400000},
+                y: {min: 0, max: 12, minRange: 12}
+              },
               zoom: {
+                mode: 'x',
                 wheel: {
                   enabled: true
                 },
                 pinch: {
                   enabled: true
                 },
-                mode: 'x',
                 drag: {
                   enabled: true,
                   modifierKey: 'shift'
@@ -122,6 +128,10 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
             }
           },
           scales: {
+            y: {
+              min: 0,
+              max: 12,
+            },
             x: {
               type: 'time',
               time: {
@@ -137,10 +147,16 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
       };
 
       window.onload = function() {
-        const myChart = new Chart(
+        myChart = new Chart(
           document.getElementById('pumpCanvas'),
           config
         );
+      }
+
+      function zoomIt() {
+        myChart.zoomScale('x', {min: 1666497600000, max: <?php echo $end ?>}, 'default');
+        //myChart.zoomScale('x', {min: 1666497600000, max: 1667102400000}, 'default');
+        return true;
       }
     </script>
   </head>
@@ -153,7 +169,10 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
       <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>" role="button">Reset</a>
       <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>?deduced=0" role="button">Raw Data</a>
       <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>?days=1" role="button">1 Day</a>
+      <a class="btn btn-outline-primary" href="#" onclick="return zoomIt();" role="button">Zoom it</a>
+      <!--
       <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>?days=-1" role="button">Full cycle</a>
+      -->
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

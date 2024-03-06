@@ -12,6 +12,8 @@ class WipeCheck extends BaseShit {
     private $hour;
     /** @var int */
     private $day;
+    /** @var bool */
+    private $debug = false;
 
     public function __construct($envFile) {
         error_log("Wipe log: " . date('Y-m-d H:i:s'));
@@ -23,6 +25,10 @@ class WipeCheck extends BaseShit {
 
     public function shouldText() {
         $this->notifications = [];
+
+        if ($this->debug) {
+            $this->notifications[] = "This is a test";
+        }
 
         if ($this->isMysqlDown) {
             $this->isAnAlert = true;
@@ -59,8 +65,11 @@ class WipeCheck extends BaseShit {
 
         // Log alert notifications
         if (!empty($this->notifications)) {
-            // No need for a summary, get the alert out
-            error_log("[ALERTING] " . implode("; ", $this->notifications));
+            if ($this->isAnAlert) {
+                error_log("[ALERTING] " . implode("; ", $this->notifications));
+            } else {
+                error_log("[Notifying] " . implode("; ", $this->notifications));
+            }
         }
 
         return $this->isAnAlert;

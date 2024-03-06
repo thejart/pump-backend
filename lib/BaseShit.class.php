@@ -141,14 +141,14 @@ class BaseShit {
         if ($numberOfDays <= 0) {
             // Any non-positive value will result in gathering all events since the last startup signal
             $query = $this->pdo->prepare("
-                SELECT id, x_value, y_value, z_value, type, timestamp
+                SELECT id, x_value, y_value, z_value, type, UNIX_TIMESTAMP(timestamp) * 1000 as timestamp
                 FROM  pump_events
                 WHERE timestamp >= '{$this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP]}'
                 ORDER BY timestamp
             ");
         } else {
             $query = $this->pdo->prepare("
-                SELECT id, x_value, y_value, z_value, type, timestamp
+                SELECT id, x_value, y_value, z_value, type, UNIX_TIMESTAMP(timestamp) * 1000 as timestamp
                 FROM  pump_events
                 WHERE timestamp > DATE_SUB(NOW(), INTERVAL {$numberOfDays} DAY)
                 ORDER BY timestamp
