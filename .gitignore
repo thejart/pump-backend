@@ -3,3 +3,4 @@ vendor/
 .env*
 index.html
 .DS_Store
+.phpunit.result.cache
