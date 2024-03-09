@@ -19,19 +19,15 @@ class BaseShit {
     /** @var bool */
     public $isMysqlDown = false;
 
-    // Twilio Secrets
+    // Texting secrets
     /** @var string */
-    private $account_sid;
-    /** @var string */
-    private $auth_token;
-    /** @var string */
-    private $twilio_number;
+    private $textbelt_token;
     /** @var string[] */
     private $text_numbers;
 
     public function __construct($envFile, $shouldParseTwilioSecrets = false) {
         if ($shouldParseTwilioSecrets) {
-            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->shitAuth, $this->account_sid, $this->auth_token, $this->twilio_number, $textNumbersString) = $this->setupEnvironment($envFile);
+            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->shitAuth, $this->textbelt_token, $textNumbersString) = $this->setupEnvironment($envFile);
             $this->text_numbers = explode(",", $textNumbersString);
         } else {
             list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->shitAuth) = $this->setupEnvironment($envFile);
@@ -121,16 +117,8 @@ class BaseShit {
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
-    public function getAccountSid() {
-        return $this->account_sid;
-    }
-
-    public function getAuthToken() {
-        return $this->auth_token;
-    }
-
-    public function getTwilioNumber() {
-        return $this->twilio_number;
+    public function getTextbeltToken() {
+        return $this->textbelt_token;
     }
 
     public function getTextNumbers() {
