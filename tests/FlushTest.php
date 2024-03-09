@@ -24,13 +24,11 @@ final class FlushTest extends TestCase
         $this->helper->deleteAllEvents();
     }
 
-    public function test_constructor_hasNoTwilioSecrets() {
+    public function test_constructor_hasNoTextingSecrets() {
         $shitPumper = new Flush($this->envFile);
 
-        $this->assertNull($shitPumper->getTwilioNumber(), "twilio number should be null");
+        $this->assertNull($shitPumper->getTextbeltToken(), "textbelt token should be null");
         $this->assertNull($shitPumper->getTextNumbers(), "text number should be null");
-        $this->assertNull($shitPumper->getAuthToken(), "auth token should be null");
-        $this->assertNull($shitPumper->getAccountSid(), "account sid should be null");
     }
 
     public function test_insertCurrentPumpEvent_nonEvent() {
