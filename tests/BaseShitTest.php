@@ -24,22 +24,18 @@ final class BaseShitTest extends TestCase
         $this->helper->deleteAllEvents();
     }
 
-    public function test_constructor_hasNoTwilioSecrets() {
+    public function test_constructor_hasNoTextingSecrets() {
         $baseShit = new BaseShit($this->envFile);
 
-        $this->assertNull($baseShit->getTwilioNumber(), "twilio number should be null");
+        $this->assertNull($baseShit->getTextbeltToken(), "text belt token should be null");
         $this->assertNull($baseShit->getTextNumbers(), "text number should be null");
-        $this->assertNull($baseShit->getAuthToken(), "auth token should be null");
-        $this->assertNull($baseShit->getAccountSid(), "account sid should be null");
     }
 
-    public function test_constructor_hasTwilioSecrets() {
+    public function test_constructor_hasTextingSecrets() {
         $baseShit = new BaseShit($this->envFile, true);
 
-        $this->assertNotNull($baseShit->getTwilioNumber(), "twilio number should not be null");
+        $this->assertNotNull($baseShit->getTextbeltToken(), "textbelt token should not be null");
         $this->assertNotNull($baseShit->getTextNumbers(), "text number should not be null");
-        $this->assertNotNull($baseShit->getAuthToken(), "auth token should not be null");
-        $this->assertNotNull($baseShit->getAccountSid(), "account sid should not be null");
     }
 
     public function test_insertPumpEvent() {
