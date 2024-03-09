@@ -21,13 +21,13 @@ class BaseShit {
 
     // Texting secrets
     /** @var string */
-    private $textbelt_token;
+    private $textbeltToken;
     /** @var string[] */
     private $text_numbers;
 
     public function __construct($envFile, $shouldParseTwilioSecrets = false) {
         if ($shouldParseTwilioSecrets) {
-            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->shitAuth, $this->textbelt_token, $textNumbersString) = $this->setupEnvironment($envFile);
+            list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->shitAuth, $this->textbeltToken, $textNumbersString) = $this->setupEnvironment($envFile);
             $this->text_numbers = explode(",", $textNumbersString);
         } else {
             list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->shitAuth) = $this->setupEnvironment($envFile);
@@ -118,7 +118,7 @@ class BaseShit {
     }
 
     public function getTextbeltToken() {
-        return $this->textbelt_token;
+        return $this->textbeltToken;
     }
 
     public function getTextNumbers() {
