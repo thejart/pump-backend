@@ -25,8 +25,8 @@ class BaseShit {
     /** @var string[] */
     private $text_numbers;
 
-    public function __construct($envFile, $shouldParseTwilioSecrets = false) {
-        if ($shouldParseTwilioSecrets) {
+    public function __construct($envFile, $shouldParseTextingSecrets = false) {
+        if ($shouldParseTextingSecrets) {
             list($mysqlDatabase, $mysqlUsername, $mysqlPassword, $this->shitAuth, $this->textbeltToken, $textNumbersString) = $this->setupEnvironment($envFile);
             $this->text_numbers = explode(",", $textNumbersString);
         } else {
