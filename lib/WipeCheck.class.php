@@ -38,12 +38,9 @@ class WipeCheck extends BaseShit {
 
         // If this is a weekly job run, prepare a summary message and exit method
         if ($this->day == 6 && $this->hour < 12) {
-            $numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_CADENCE_IN_DAYS));
-            $totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
-            $cycleStats = $this->getRecentCycleStats();
+			//$this->notifications[] = $this->getOldMessage();
+			$this->notifications[] = $this->getWeeklyMessage();
 
-            $this->notifications[] = "{$totalReboots} reboots and {$numberOfEventsInLastWeek} pump events this week.\n" .
-                "{$cycleStats['daysBetweenReboots']} days between recent reboots after {$cycleStats['eventCount']} events";
             error_log("[Notifying] " . implode("; ", $this->notifications));
             return true;
         }
@@ -82,4 +79,30 @@ class WipeCheck extends BaseShit {
             return "[poop summary]\n" . implode('; ', $this->notifications);
         }
     }
+
+	private function getOldMessage() : string {
+		$numberOfEventsInLastWeek = count($this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_CADENCE_IN_DAYS));
+		$totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
+		$cycleStats = $this->getRecentCycleStats();
+
+		return "{$totalReboots} reboots and {$numberOfEventsInLastWeek} pump events this week.\n" .
+			"{$cycleStats['daysBetweenReboots']} days between recent reboots after {$cycleStats['eventCount']} events";
+	}
+
+	private function getWeeklyMessage() : string {
+		$healthchecks = 0;
+		$events = $this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
+		foreach ($events as $event) {
+			if ($event->type == self::EVENT_TYPE_HEALTHCHECK) {
+				$healthchecks++;
+			}
+		}
+
+		$uptime = $healthchecks / (self::SUMMARY_TEXT_CADENCE_IN_DAYS * 24);
+		$totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
+		$lastRebootTimestamp = $this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP];
+		$lastRebootString = date("m/d H:i", $lastRebootTimestamp);
+
+		return "Uptime {$uptime}% with {$totalReboots} reboots. Last rebooted {$lastRebootString}";
+	}
 }
