@@ -76,7 +76,7 @@ class WipeCheck extends BaseShit {
         if ($this->isAnAlert) {
             return "[POOP ALERT!]\n" . implode('; ', $this->notifications);
         } else {
-            return "[poop summary]\n" . implode('; ', $this->notifications);
+            return "[weekly summary]\n" . implode('; ', $this->notifications);
         }
     }
 
