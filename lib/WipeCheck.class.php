@@ -101,7 +101,7 @@ class WipeCheck extends BaseShit {
 		$uptime = sprintf("%.2f%%",100 * $healthchecks / (self::SUMMARY_TEXT_CADENCE_IN_DAYS * 24));
 		$totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
 		$lastRebootTimestamp = $this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP];
-		$lastRebootString = date("m-d H:i", $lastRebootTimestamp);
+		$lastRebootString = date("m-d H:i", strtotime($lastRebootTimestamp));
 
 		return "Uptime {$uptime} with {$totalReboots} reboots. Last rebooted {$lastRebootString}";
 	}
