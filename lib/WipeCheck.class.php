@@ -103,6 +103,6 @@ class WipeCheck extends BaseShit {
 		$lastRebootTimestamp = $this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP];
 		$lastRebootString = date("m-d H:i", $lastRebootTimestamp);
 
-		return "Uptime {$uptime}% with {$totalReboots} reboots. Last rebooted {$lastRebootString}";
+		return "Uptime {$uptime} with {$totalReboots} reboots. Last rebooted {$lastRebootString}";
 	}
 }
