@@ -90,15 +90,15 @@ class WipeCheck extends BaseShit {
 	}
 
 	private function getWeeklyMessage() : string {
-		$healthchecks = 0;
+		$healthAndStartupChecks = 0;
 		$events = $this->getXDaysOfRecentEvents(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
 		foreach ($events as $event) {
-			if ($event->type == self::EVENT_TYPE_HEALTHCHECK) {
-				$healthchecks++;
+			if ($event->type == self::EVENT_TYPE_HEALTHCHECK || $event->type == self::EVENT_TYPE_STARTUP) {
+				$healthAndStartupChecks++;
 			}
 		}
 
-		$uptime = sprintf("%.2f%%",100 * $healthchecks / (self::SUMMARY_TEXT_CADENCE_IN_DAYS * 24));
+		$uptime = sprintf("%.1f%%",100 * $healthAndStartupChecks / (self::SUMMARY_TEXT_CADENCE_IN_DAYS * 24));
 		$totalReboots = $this->getRebootCountInXDays(self::SUMMARY_TEXT_CADENCE_IN_DAYS);
 		$lastRebootTimestamp = $this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP];
 		$lastRebootString = date("jS @ g:ia", strtotime($lastRebootTimestamp));
