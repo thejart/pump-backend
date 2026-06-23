@@ -43,6 +43,34 @@ class FunctionalHelper {
         $query->execute();
     }
 
+    public function insertVacation($endDate, $isArchived = 0) {
+        $query = $this->pdo->prepare("
+            INSERT INTO vacation
+            (end_date, is_archived)
+            VALUES (:end_date, :is_archived)
+        ");
+
+        $query->execute([
+            ':end_date' => $endDate,
+            ':is_archived' => $isArchived
+        ]);
+    }
+
+    public function getTotalNumberOfVacations() {
+        $query = $this->pdo->prepare("
+            SELECT COUNT(*) AS count
+            FROM vacation
+        ");
+
+        $query->execute();
+        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
+    }
+
+    public function deleteAllVacations() {
+        $query = $this->pdo->prepare("DELETE FROM vacation");
+        $query->execute();
+    }
+
     public function unixTimestampToDbFormat($unixTimestamp) {
         return date("Y-m-d H:i:s", $unixTimestamp);
     }

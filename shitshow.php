@@ -19,6 +19,9 @@ $calloutCount = $shitShow->getCalloutCountSinceReboot();
 list($startupData, $pumpingData, $healthcheckData, $start, $end) = $shitShow->getChartData();
 list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachineEvents($pumpingData);
 
+$activeVacationEndDate = $shitShow->getActiveVacationEndDate();
+$vacationFlash = $_GET['vacation'] ?? null;
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -163,6 +166,17 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
   </head>
 
   <body>
+<?php
+    $flashMap = [
+        'set'     => ['Vacation set.', 'alert-success'],
+        'cleared' => ['Vacation cleared.', 'alert-success'],
+        'error'   => ['Vacation update failed (check the auth code).', 'alert-danger'],
+    ];
+    if (!is_null($vacationFlash) && isset($flashMap[$vacationFlash])):
+        list($flashMessage, $flashClass) = $flashMap[$vacationFlash];
+?>
+    <div class="alert <?php echo $flashClass; ?> text-center mb-0" role="alert"><?php echo $flashMessage; ?></div>
+<?php endif; ?>
     <div class="chart-container" style="position:relative; height:80vh; width:100vw; padding-left:10px; padding-right:10px;">
       <canvas id="pumpCanvas"></canvas>
     </div>
@@ -174,6 +188,18 @@ list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachine
       <!--
       <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>?days=-1" role="button">Full cycle</a>
       -->
+      <form class="form-inline" method="post" action="vacation.php">
+        <input type="hidden" name="redirect" value="1">
+<?php if (!is_null($activeVacationEndDate)): ?>
+        <span class="badge badge-info mr-2">&#127958; On vacation until <?php echo date("M jS", strtotime($activeVacationEndDate)); ?></span>
+<?php else: ?>
+        <span class="badge badge-light mr-2">No active vacation</span>
+<?php endif; ?>
+        <input class="form-control form-control-sm mr-1" type="date" name="endDate">
+        <input class="form-control form-control-sm mr-1" type="password" name="authCode" placeholder="auth code" autocomplete="off">
+        <button class="btn btn-sm btn-outline-success mr-1" type="submit" name="action" value="set">Set</button>
+        <button class="btn btn-sm btn-outline-danger" type="submit" name="action" value="clear">Clear</button>
+      </form>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

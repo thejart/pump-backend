@@ -55,7 +55,9 @@ class WipeCheck extends BaseShit {
             $this->isAnAlert = true;
         }
 
-        if (!$this->hasHadRecentPumping()) {
+        // An active vacation suppresses the no-pumping alert (no household activity is expected to fill the basin),
+        // but intentionally leaves the healthcheck and MySQL-down alerts active so we still know the monitor is alive.
+        if (!$this->hasHadRecentPumping() && !$this->hasActiveVacation()) {
             $this->notifications[] = "No recent pump events in the past " . self::NO_PUMPING_THRESHOLD_IN_DAYS . " days";
             $this->isAnAlert = true;
         }
@@ -103,6 +105,13 @@ class WipeCheck extends BaseShit {
 		$lastRebootTimestamp = $this->getMostRecentEventsOfEachType()[self::EVENT_TYPE_STARTUP];
 		$lastRebootString = date("jS @ g:ia", strtotime($lastRebootTimestamp));
 
-		return "{$uptime} uptime with {$totalReboots} reboots. Last rebooted on the {$lastRebootString}";
+		$message = "{$uptime} uptime with {$totalReboots} reboots. Last rebooted on the {$lastRebootString}";
+
+		$vacationEndDate = $this->getActiveVacationEndDate();
+		if (!is_null($vacationEndDate)) {
+			$message .= "\nOn vacation until " . date("M jS", strtotime($vacationEndDate));
+		}
+
+		return $message;
 	}
 }

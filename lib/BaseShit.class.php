@@ -232,6 +232,64 @@ class BaseShit {
         return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
+    // Returns the end_date of the currently active vacation (a future, unarchived row), or null if none.
+    public function getActiveVacationEndDate() {
+        $query = $this->pdo->prepare("
+            SELECT end_date
+            FROM vacation
+            WHERE end_date > NOW()
+            AND is_archived = 0
+            ORDER BY end_date DESC
+            LIMIT 1
+        ");
+
+        $query->execute();
+        $result = $query->fetchAll(PDO::FETCH_OBJ);
+        return $query->rowCount() ? $result[0]->end_date : null;
+    }
+
+    public function hasActiveVacation() {
+        return !is_null($this->getActiveVacationEndDate());
+    }
+
+    // Sets a new vacation end date, archiving any existing active vacation first so that
+    // at most one active (future, unarchived) row exists at a time.
+    public function setVacationEndDate($endDate) {
+        $parsedTimestamp = strtotime($endDate);
+        if ($parsedTimestamp === false) {
+            error_log("Unable to parse vacation end date: {$endDate}");
+            return false;
+        }
+
+        $this->clearVacation();
+
+        $query = $this->pdo->prepare("
+            INSERT INTO vacation (end_date)
+            VALUES (:end_date)
+        ");
+
+        try {
+            $query->execute([':end_date' => date("Y-m-d H:i:s", $parsedTimestamp)]);
+        } catch (PDOException $e) {
+            error_log("Unable to insert vacation end date: {$endDate}");
+            return false;
+        }
+
+        return (bool)$query->rowCount();
+    }
+
+    // Soft-deletes the active vacation (preserving history) by flagging it archived.
+    public function clearVacation() {
+        $query = $this->pdo->prepare("
+            UPDATE vacation
+            SET is_archived = 1
+            WHERE end_date > NOW()
+            AND is_archived = 0
+        ");
+
+        $query->execute();
+    }
+
     protected function getRequestParam($field, $default = null) {
         return $_REQUEST[$field] ?? $default;
     }
