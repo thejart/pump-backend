@@ -1,6 +1,47 @@
 # Pump Backend
 So you've got yourself an Arduino board to monitor your evacuation pump and loaded the [pump monitor](https://github.com/thejart/pump-monitor) code on it? Congrats, that's half the equation! Now you need some backend code to monitor the monitor.
 
+## Architecture
+The Arduino (with an accelerometer) watches the basement evacuation pump and fires authenticated HTTP requests to `flush.php`, which timestamps each event into MySQL. A cron'd `wipecheck.php` watches for trouble (too few healthchecks, no recent pumping, MySQL down) and texts you via Textbelt. You view history on the `shitshow.php` Chart.js dashboard, and can declare a "vacation" (which suppresses the no-pumping alert) via `vacation.php`, authenticated by a one-time code texted to your phone.
+
+The diagram source lives at [`docs/architecture.mmd`](docs/architecture.mmd) (edit it on [mermaid.live](https://mermaid.live)).
+
+```mermaid
+flowchart LR
+    pump([Sewage evacuation pump])
+    ard[Arduino Nano + accelerometer]
+    phone([Your phone])
+    user([You / operator])
+    textbelt[[Textbelt SMS]]
+
+    subgraph server [Web server: PHP + MySQL]
+        flush["flush.php (Flush)"]
+        shitshow["shitshow.php (ShitShow) — Chart.js dashboard"]
+        vacation["vacation.php (Vacation) — OTP-auth JSON API"]
+        wipecheck["wipecheck.php (WipeCheck) — cron, every 12h"]
+        db[(MySQL: pump_events, vacation, auth_challenge)]
+    end
+
+    pump -- vibration --> ard
+    ard -- "HTTP GET: healthcheck / startup / pump event (+authCode)" --> flush
+    flush -- insert event --> db
+
+    user -- browser --> shitshow
+    shitshow -- read events --> db
+
+    user -- "Set/Clear vacation" --> vacation
+    vacation -- "1: store + request code" --> db
+    vacation -- "2: text one-time code" --> textbelt
+    textbelt -- SMS --> phone
+    user -- "3: confirm code" --> vacation
+    vacation -- "commit set/clear" --> db
+
+    wipecheck -- "read events + vacation" --> db
+    wipecheck -- "alert if thresholds met (no-pump suppressed on vacation)" --> textbelt
+    textbelt -- "alerts + codes" --> phone
+    phone --> user
+```
+
 ## Scripts Overview
 - `flush.php` This is the endpoint that the pump monitor's HTTP request will hit. It's responsible for parsing out the query params, determining the type of request (startup, pumping or healthcheck) and inserting a row into a database table.
 - `shitshow.php` This is an endpoint used to display recent requests in a graph format (see below for more info).

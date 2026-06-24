@@ -1,0 +1,33 @@
+flowchart LR
+    pump([Sewage evacuation pump])
+    ard[Arduino Nano + accelerometer]
+    phone([Your phone])
+    user([You / operator])
+    textbelt[[Textbelt SMS]]
+
+    subgraph server [Web server: PHP + MySQL]
+        flush["flush.php (Flush)"]
+        shitshow["shitshow.php (ShitShow) — Chart.js dashboard"]
+        vacation["vacation.php (Vacation) — OTP-auth JSON API"]
+        wipecheck["wipecheck.php (WipeCheck) — cron, every 12h"]
+        db[(MySQL: pump_events, vacation, auth_challenge)]
+    end
+
+    pump -- vibration --> ard
+    ard -- "HTTP GET: healthcheck / startup / pump event (+authCode)" --> flush
+    flush -- insert event --> db
+
+    user -- browser --> shitshow
+    shitshow -- read events --> db
+
+    user -- "Set/Clear vacation" --> vacation
+    vacation -- "1: store + request code" --> db
+    vacation -- "2: text one-time code" --> textbelt
+    textbelt -- SMS --> phone
+    user -- "3: confirm code" --> vacation
+    vacation -- "commit set/clear" --> db
+
+    wipecheck -- "read events + vacation" --> db
+    wipecheck -- "alert if thresholds met (no-pump suppressed on vacation)" --> textbelt
+    textbelt -- "alerts + codes" --> phone
+    phone --> user
