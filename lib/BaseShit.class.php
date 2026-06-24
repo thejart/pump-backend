@@ -142,6 +142,8 @@ class BaseShit {
                 continue;
             }
 
+            error_log("texting {$number}\n$message\n");
+
             $handler = curl_init("https://textbelt.com/text");
             curl_setopt($handler, CURLOPT_POST, true);
             curl_setopt($handler, CURLOPT_POSTFIELDS, http_build_query([
