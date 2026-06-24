@@ -165,7 +165,21 @@ $vacationFlash = $_GET['vacation'] ?? null;
     </script>
   </head>
 
-  <body>
+  <body style="padding-top: 60px;">
+    <div class="navbar fixed-top bg-light justify-content-end">
+      <form class="form-inline" method="post" action="vacation.php">
+        <input type="hidden" name="redirect" value="1">
+<?php if (!is_null($activeVacationEndDate)): ?>
+        <span class="badge badge-info mr-2">&#127958; On vacation until <?php echo date("M jS", strtotime($activeVacationEndDate)); ?></span>
+<?php else: ?>
+        <span class="badge badge-light mr-2">No active vacation</span>
+<?php endif; ?>
+        <input class="form-control form-control-sm mr-1" type="date" name="endDate">
+        <input class="form-control form-control-sm mr-1" type="password" name="authCode" placeholder="auth code" autocomplete="off">
+        <button class="btn btn-sm btn-outline-success mr-1" type="submit" name="action" value="set">Set</button>
+        <button class="btn btn-sm btn-outline-danger" type="submit" name="action" value="clear">Clear</button>
+      </form>
+    </div>
 <?php
     $flashMap = [
         'set'     => ['Vacation set.', 'alert-success'],
@@ -188,18 +202,6 @@ $vacationFlash = $_GET['vacation'] ?? null;
       <!--
       <a class="btn btn-outline-primary" href="<?php echo $shitShow->getFilename(); ?>?days=-1" role="button">Full cycle</a>
       -->
-      <form class="form-inline" method="post" action="vacation.php">
-        <input type="hidden" name="redirect" value="1">
-<?php if (!is_null($activeVacationEndDate)): ?>
-        <span class="badge badge-info mr-2">&#127958; On vacation until <?php echo date("M jS", strtotime($activeVacationEndDate)); ?></span>
-<?php else: ?>
-        <span class="badge badge-light mr-2">No active vacation</span>
-<?php endif; ?>
-        <input class="form-control form-control-sm mr-1" type="date" name="endDate">
-        <input class="form-control form-control-sm mr-1" type="password" name="authCode" placeholder="auth code" autocomplete="off">
-        <button class="btn btn-sm btn-outline-success mr-1" type="submit" name="action" value="set">Set</button>
-        <button class="btn btn-sm btn-outline-danger" type="submit" name="action" value="clear">Clear</button>
-      </form>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
