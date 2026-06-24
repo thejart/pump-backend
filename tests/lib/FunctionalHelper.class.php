@@ -71,6 +71,37 @@ class FunctionalHelper {
         $query->execute();
     }
 
+    public function insertAuthChallenge($code, $action, $payload, $expiresAt, $attempts = 0) {
+        $query = $this->pdo->prepare("
+            INSERT INTO auth_challenge
+            (code_hash, action, payload, attempts, expires_at)
+            VALUES (:code_hash, :action, :payload, :attempts, :expires_at)
+        ");
+
+        $query->execute([
+            ':code_hash' => hash('sha256', $code),
+            ':action' => $action,
+            ':payload' => $payload,
+            ':attempts' => $attempts,
+            ':expires_at' => $expiresAt
+        ]);
+    }
+
+    public function getTotalNumberOfAuthChallenges() {
+        $query = $this->pdo->prepare("
+            SELECT COUNT(*) AS count
+            FROM auth_challenge
+        ");
+
+        $query->execute();
+        return (int)$query->fetchAll(PDO::FETCH_OBJ)[0]->count;
+    }
+
+    public function deleteAllAuthChallenges() {
+        $query = $this->pdo->prepare("DELETE FROM auth_challenge");
+        $query->execute();
+    }
+
     public function unixTimestampToDbFormat($unixTimestamp) {
         return date("Y-m-d H:i:s", $unixTimestamp);
     }

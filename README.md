@@ -41,6 +41,20 @@ CREATE TABLE `vacation` (
 ```
 `end_date` is compared against the database server's `NOW()` (server-local time). Setting a new date archives any currently-active one (`is_archived`) rather than deleting it, so the table keeps a history of past vacations.
 
+Setting/clearing a vacation is authenticated by a one-time code texted to you (see `vacation.php`), which needs an `auth_challenge` table:
+```
+CREATE TABLE `auth_challenge` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `code_hash` char(64) NOT NULL,
+  `action` varchar(16) NOT NULL,
+  `payload` varchar(64) DEFAULT NULL,
+  `attempts` int(11) NOT NULL DEFAULT 0,
+  `expires_at` datetime NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+```
+
 ### .env file
 The .env file contains all the personal data that needs to be kept out of source control. Make sure that it's readable by your webserver's user, but otherwise locked down (eg. `chown <youruser>:<webuser> .env && chmod 640 .env`).
 
@@ -55,18 +69,24 @@ The .env file contains all the personal data that needs to be kept out of source
 ```
 
 ### vacation.php
-Dispatches on an `action` query/POST param. Reading is public; setting and clearing require the same `authCode` used by the pump/health calls.
-- `action=read` (default) Returns the current status as JSON: `{"active":bool,"end_date":string|null,"error":null}`.
-- `action=set` Requires `authCode` and an `endDate` (`YYYY-MM-DD` is fine — set it to the day you *return*). Archives any active vacation and records the new one.
-- `action=clear` Requires `authCode`. Soft-archives the active vacation.
+A JSON endpoint that dispatches on an `action` param. Reading is public; mutating is authenticated by a one-time code texted (via Textbelt) to the `.env` recipient number(s) — so you never type a shared secret into the browser. Possession of the phone *is* the credential.
+
+- `action=read` (default) Returns current status: `{"ok":true,"active":bool,"end_date":string|null}`.
+- `action=request` Starts a change. Pass `op=set` with an `endDate` (`YYYY-MM-DD` is fine — set it to the day you *return*), or `op=clear`. Generates a 6-digit code, stores it (hashed) bound to that pending change, and texts it to you.
+- `action=confirm` Pass the texted `code`. On success the bound set/clear is committed and the code is consumed.
+
+The code is single-use, expires after 10 minutes (`AUTH_CHALLENGE_TTL_SECONDS`), and locks out after 5 wrong guesses (`AUTH_CHALLENGE_MAX_ATTEMPTS`). Issuing a new code is rate-limited (`Vacation::REQUEST_RATELIMIT_SECONDS`) so the public dashboard can't spam your phone / run up Textbelt cost.
 
 ```
 curl 'https://your-host/vacation.php'
-curl 'https://your-host/vacation.php?action=set&endDate=2026-07-15&authCode=<your auth code>'
-curl 'https://your-host/vacation.php?action=clear&authCode=<your auth code>'
+# request a code, then confirm it:
+curl -d 'action=request&op=set&endDate=2026-07-15' 'https://your-host/vacation.php'
+curl -d 'action=confirm&code=123456' 'https://your-host/vacation.php'
 ```
 
-The `shitshow.php` dashboard also shows the current vacation status and provides a small form to set/clear it (you type the auth code into a password field; it's never embedded in the page). The form posts with `redirect=1`, which makes `vacation.php` redirect back to the dashboard instead of returning JSON.
+**Note:** because the code is sent over the same Textbelt key/quota as your pump alerts, a paid key is recommended so confirmation texts don't compete with (or get starved by) a real alert.
+
+The `shitshow.php` dashboard shows current vacation status and drives this flow: picking a date and hitting **Set** (or **Clear**) requests a code, then a modal collects the texted code and confirms.
 
 ### shitshow.php / Chart.js
 The shitshow.php endpoint uses Chart.js to display recent events and accomodates a few optional GET parameters:

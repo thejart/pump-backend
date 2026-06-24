@@ -10,6 +10,9 @@ class BaseShit {
     const HEALTHCHECK_COUNT_THRESHOLD = 11; // we should expect at least 11 healthchecks within 12 hours (given the nano's imprecise clock)
     const NO_PUMPING_THRESHOLD_IN_DAYS = 3; // days (i.e. there should be a pumping event every 3 days under normal circumstances)
 
+    const AUTH_CHALLENGE_TTL_SECONDS = 600; // a texted confirmation code is valid for 10 minutes
+    const AUTH_CHALLENGE_MAX_ATTEMPTS = 5;  // lock out (and require a new code) after this many wrong guesses
+
     /** @var PDO */
     private $pdo;
 
@@ -123,6 +126,34 @@ class BaseShit {
 
     public function getTextNumbers() {
         return $this->text_numbers;
+    }
+
+    // Sends an SMS via Textbelt to every configured recipient. Requires the texting secrets
+    // to have been parsed (construct with $shouldParseTextingSecrets = true).
+    public function sendText($message) {
+        if (empty($this->text_numbers)) {
+            error_log("No text recipients configured; skipping SMS");
+            return;
+        }
+
+        foreach ($this->text_numbers as $number) {
+            $number = trim($number);
+            if ($number === '') {
+                continue;
+            }
+
+            $handler = curl_init("https://textbelt.com/text");
+            curl_setopt($handler, CURLOPT_POST, true);
+            curl_setopt($handler, CURLOPT_POSTFIELDS, http_build_query([
+                'phone' => $number,
+                'message' => $message,
+                'key' => $this->textbeltToken,
+            ]));
+            curl_setopt($handler, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($handler);
+            curl_close($handler);
+            error_log("texting {$number}: {$response}");
+        }
     }
 
     protected function getXDaysOfRecentEvents(int $numberOfDays) {
@@ -288,6 +319,89 @@ class BaseShit {
         ");
 
         $query->execute();
+    }
+
+    // Stores a one-time confirmation code (hashed) bound to a pending action/payload. Only one
+    // challenge is outstanding at a time, so any previous challenge is cleared first.
+    public function createAuthChallenge($action, $payload, $code) {
+        $this->clearAuthChallenges();
+
+        $ttl = (int)self::AUTH_CHALLENGE_TTL_SECONDS;
+        $query = $this->pdo->prepare("
+            INSERT INTO auth_challenge (code_hash, action, payload, expires_at)
+            VALUES (:code_hash, :action, :payload, DATE_ADD(NOW(), INTERVAL {$ttl} SECOND))
+        ");
+
+        try {
+            $query->execute([
+                ':code_hash' => hash('sha256', $code),
+                ':action' => $action,
+                ':payload' => $payload,
+            ]);
+        } catch (PDOException $e) {
+            error_log("Unable to create auth challenge");
+            return false;
+        }
+
+        return (bool)$query->rowCount();
+    }
+
+    // Validates a submitted code against the active (unexpired) challenge. On success the challenge
+    // is consumed (deleted) and its row returned; on failure the attempt count is incremented and the
+    // challenge is discarded once too many wrong guesses accumulate. Returns the challenge row or null.
+    public function verifyAuthChallenge($code) {
+        $query = $this->pdo->prepare("
+            SELECT id, action, payload, code_hash, attempts
+            FROM auth_challenge
+            WHERE expires_at > NOW()
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+
+        $query->execute();
+        $rows = $query->fetchAll(PDO::FETCH_OBJ);
+        if (!$rows) {
+            return null;
+        }
+        $challenge = $rows[0];
+
+        if (hash_equals($challenge->code_hash, hash('sha256', (string)$code))) {
+            $this->deleteAuthChallenge($challenge->id);
+            return $challenge;
+        }
+
+        if ($challenge->attempts + 1 >= self::AUTH_CHALLENGE_MAX_ATTEMPTS) {
+            $this->deleteAuthChallenge($challenge->id);
+        } else {
+            $update = $this->pdo->prepare("UPDATE auth_challenge SET attempts = attempts + 1 WHERE id = :id");
+            $update->execute([':id' => $challenge->id]);
+        }
+
+        return null;
+    }
+
+    // Seconds since the most recent challenge was created (any state), or null if none exist.
+    // Used to rate-limit how often a new code can be texted.
+    public function secondsSinceLastAuthChallenge() {
+        $query = $this->pdo->prepare("
+            SELECT TIMESTAMPDIFF(SECOND, created_at, NOW()) AS seconds
+            FROM auth_challenge
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+
+        $query->execute();
+        $rows = $query->fetchAll(PDO::FETCH_OBJ);
+        return $rows ? (int)$rows[0]->seconds : null;
+    }
+
+    public function clearAuthChallenges() {
+        $this->pdo->prepare("DELETE FROM auth_challenge")->execute();
+    }
+
+    private function deleteAuthChallenge($id) {
+        $query = $this->pdo->prepare("DELETE FROM auth_challenge WHERE id = :id");
+        $query->execute([':id' => $id]);
     }
 
     protected function getRequestParam($field, $default = null) {

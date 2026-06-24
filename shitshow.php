@@ -20,7 +20,6 @@ list($startupData, $pumpingData, $healthcheckData, $start, $end) = $shitShow->ge
 list($deducedPumpingData, $deducedWashingData) = $shitShow->deduceWashingMachineEvents($pumpingData);
 
 $activeVacationEndDate = $shitShow->getActiveVacationEndDate();
-$vacationFlash = $_GET['vacation'] ?? null;
 
 ?>
 <!doctype html>
@@ -167,30 +166,17 @@ $vacationFlash = $_GET['vacation'] ?? null;
 
   <body style="padding-top: 60px;">
     <div class="navbar fixed-top bg-light justify-content-end">
-      <form class="form-inline" method="post" action="vacation.php">
-        <input type="hidden" name="redirect" value="1">
+      <div class="form-inline">
 <?php if (!is_null($activeVacationEndDate)): ?>
         <span class="badge badge-info mr-2">&#127958; On vacation until <?php echo date("M jS", strtotime($activeVacationEndDate)); ?></span>
 <?php else: ?>
         <span class="badge badge-light mr-2">No active vacation</span>
 <?php endif; ?>
-        <input class="form-control form-control-sm mr-1" type="date" name="endDate">
-        <input class="form-control form-control-sm mr-1" type="password" name="authCode" placeholder="auth code" autocomplete="off">
-        <button class="btn btn-sm btn-outline-success mr-1" type="submit" name="action" value="set">Set</button>
-        <button class="btn btn-sm btn-outline-danger" type="submit" name="action" value="clear">Clear</button>
-      </form>
+        <input id="vacationDate" class="form-control form-control-sm mr-1" type="date">
+        <button id="vacationSet" class="btn btn-sm btn-outline-success mr-1" type="button">Set</button>
+        <button id="vacationClear" class="btn btn-sm btn-outline-danger" type="button">Clear</button>
+      </div>
     </div>
-<?php
-    $flashMap = [
-        'set'     => ['Vacation set.', 'alert-success'],
-        'cleared' => ['Vacation cleared.', 'alert-success'],
-        'error'   => ['Vacation update failed (check the auth code).', 'alert-danger'],
-    ];
-    if (!is_null($vacationFlash) && isset($flashMap[$vacationFlash])):
-        list($flashMessage, $flashClass) = $flashMap[$vacationFlash];
-?>
-    <div class="alert <?php echo $flashClass; ?> text-center mb-0" role="alert"><?php echo $flashMessage; ?></div>
-<?php endif; ?>
     <div class="chart-container" style="position:relative; height:80vh; width:100vw; padding-left:10px; padding-right:10px;">
       <canvas id="pumpCanvas"></canvas>
     </div>
@@ -204,8 +190,71 @@ $vacationFlash = $_GET['vacation'] ?? null;
       -->
     </div>
 
+    <div class="modal fade" id="otpModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm via text message</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <p id="otpMessage">A confirmation code was texted to you. Enter it below.</p>
+            <input id="otpCode" class="form-control" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="off">
+            <div id="otpError" class="text-danger mt-2" style="display:none;"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button id="otpConfirm" type="button" class="btn btn-primary">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.6/dist/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      (function() {
+        function postVacation(params) {
+          return fetch('vacation.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams(params).toString()
+          }).then(function(response) { return response.json(); });
+        }
+
+        // "Set"/"Clear" don't mutate anything directly — they ask the backend to text a one-time
+        // code, then the modal collects it and confirms the pending change.
+        function requestCode(op) {
+          var params = {action: 'request', op: op};
+          if (op === 'set') {
+            var chosenDate = document.getElementById('vacationDate').value;
+            if (!chosenDate) { alert('Pick a date first.'); return; }
+            params.endDate = chosenDate;
+          }
+          postVacation(params).then(function(result) {
+            if (!result.ok) { alert(result.error || 'Unable to send a code.'); return; }
+            document.getElementById('otpCode').value = '';
+            document.getElementById('otpError').style.display = 'none';
+            document.getElementById('otpMessage').textContent = result.message || 'A confirmation code was texted to you. Enter it below.';
+            $('#otpModal').modal('show');
+          }).catch(function() { alert('Network error. Please try again.'); });
+        }
+
+        document.getElementById('vacationSet').addEventListener('click', function() { requestCode('set'); });
+        document.getElementById('vacationClear').addEventListener('click', function() {
+          if (confirm('Clear the active vacation?')) { requestCode('clear'); }
+        });
+        document.getElementById('otpConfirm').addEventListener('click', function() {
+          var code = document.getElementById('otpCode').value.trim();
+          postVacation({action: 'confirm', code: code}).then(function(result) {
+            if (result.ok) { window.location.reload(); return; }
+            var errorBox = document.getElementById('otpError');
+            errorBox.textContent = result.error || 'Invalid code.';
+            errorBox.style.display = 'block';
+          }).catch(function() { alert('Network error. Please try again.'); });
+        });
+      })();
+    </script>
   </body>
 </html>
