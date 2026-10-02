@@ -27,24 +27,26 @@ class ShitShow extends BaseShit {
 
 
 
-
+    // ->x timestamps are in milliseconds.
+    private const SECOND = 1000;
+ 
     // Pumps less than this far apart belong to the same session.
     // Drain bursts within one wash cycle can be ~20 minutes apart.
-    private const SESSION_GAP = 25 * 60;
-
+    private const SESSION_GAP = 25 * 60 * self::SECOND;
+ 
     // A session needs at least this many pumps to count as a wash.
     // Toilets, sinks and showers almost always trigger a single pump.
     private const MIN_PUMPS = 2;
-
+ 
     // Back-to-back pumps this close together mean the pit is refilling
     // faster than it empties, i.e. a large drain.
-    private const QUICK_GAP = 90;
-
+    private const QUICK_GAP = 90 * self::SECOND;
+ 
     // Bedding, Towels, Delicates and Tub Clean produce 2+ quick repeats.
     private const HEAVY_QUICK_REPEATS = 2;
-
+ 
     // The cycle typically finishes ~10 minutes after the last pump.
-    private const END_OFFSET = 10 * 60;
+    private const END_OFFSET = 10 * 60 * self::SECOND;
 
 
     public function __construct($envFile) {
@@ -104,13 +106,13 @@ class ShitShow extends BaseShit {
     }
 
     /**
-     * @param array $events pump events, each with ->x as a unix timestamp
+     * @param array $events pump events, each with ->x as a unix timestamp in milliseconds
      * @return array [$pumpingEvents, $washingEvents, $cycles]
      */
     public function deduceWashingMachineEvents(array $events): array
     {
-        usort($events, fn($a, $b) => $a->x <=> $b->x);
-
+        // Assumes $events is already sorted by ->x ascending.
+ 
         // 1. Group pumps into sessions separated by quiet gaps.
         $sessions = [];
         $current = [];
@@ -124,28 +126,28 @@ class ShitShow extends BaseShit {
         if ($current) {
             $sessions[] = $current;
         }
-
+ 
         // 2. Classify each session as a whole.
         $pumpingEvents = [];
         $washingEvents = [];
         $cycles = [];
-
+ 
         foreach ($sessions as $session) {
             if (count($session) < self::MIN_PUMPS) {
                 array_push($pumpingEvents, ...$session);
                 continue;
             }
-
+ 
             $quickRepeats = 0;
             for ($i = 1; $i < count($session); $i++) {
                 if ($session[$i]->x - $session[$i - 1]->x <= self::QUICK_GAP) {
                     $quickRepeats++;
                 }
             }
-
+ 
             $first = $session[0];
             $last = end($session);
-
+ 
             $washingEvents[] = $first;
             $cycles[] = [
                 'start'        => $first->x,
@@ -155,7 +157,7 @@ class ShitShow extends BaseShit {
                 'heavy'        => $quickRepeats >= self::HEAVY_QUICK_REPEATS,
             ];
         }
-
+ 
         return [$pumpingEvents, $washingEvents, $cycles];
     }
 }
