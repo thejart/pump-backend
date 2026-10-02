@@ -25,6 +25,28 @@ class ShitShow extends BaseShit {
     /** @var string */
     protected $filename;
 
+
+
+
+    // Pumps less than this far apart belong to the same session.
+    // Drain bursts within one wash cycle can be ~20 minutes apart.
+    private const SESSION_GAP = 25 * 60;
+
+    // A session needs at least this many pumps to count as a wash.
+    // Toilets, sinks and showers almost always trigger a single pump.
+    private const MIN_PUMPS = 2;
+
+    // Back-to-back pumps this close together mean the pit is refilling
+    // faster than it empties, i.e. a large drain.
+    private const QUICK_GAP = 90;
+
+    // Bedding, Towels, Delicates and Tub Clean produce 2+ quick repeats.
+    private const HEAVY_QUICK_REPEATS = 2;
+
+    // The cycle typically finishes ~10 minutes after the last pump.
+    private const END_OFFSET = 10 * 60;
+
+
     public function __construct($envFile) {
         parent::__construct($envFile);
         $this->viewWindow = (int)$this->getRequestParam('days', 30);
@@ -81,33 +103,59 @@ class ShitShow extends BaseShit {
         return $this->filename;
     }
 
-    public function deduceWashingMachineEvents($events) {
-        $skipEventCounter = 0;
-        $pumpingEvents = [];
-        $washingEvents = [];
+    /**
+     * @param array $events pump events, each with ->x as a unix timestamp
+     * @return array [$pumpingEvents, $washingEvents, $cycles]
+     */
+    public function deduceWashingMachineEvents(array $events): array
+    {
+        usort($events, fn($a, $b) => $a->x <=> $b->x);
 
-        foreach ($events as $i => $event) {
-            if ($skipEventCounter) {
-                $skipEventCounter--;
-                continue;
+        // 1. Group pumps into sessions separated by quiet gaps.
+        $sessions = [];
+        $current = [];
+        foreach ($events as $event) {
+            if ($current && $event->x - end($current)->x > self::SESSION_GAP) {
+                $sessions[] = $current;
+                $current = [];
             }
-
-            if (!isset($events[$i+2])) {
-                $pumpingEvents[] = $event;
-                continue;
-            }
-
-            // if event[i+2] is within 15 minutes of event[i] AND event[i+1] is within 3 minutes of event[i],
-            // we probably have a washing machine event
-            if ($events[$i+2]->x - $event->x <= self::FIFTEEN_MINUTES &&
-                $events[$i+1]->x - $event->x <= self::THREE_MINUTES) {
-                $washingEvents[] = $event;
-                $skipEventCounter = 2;
-            } else {
-                $pumpingEvents[] = $event;
-            }
+            $current[] = $event;
+        }
+        if ($current) {
+            $sessions[] = $current;
         }
 
-        return [$pumpingEvents, $washingEvents];
+        // 2. Classify each session as a whole.
+        $pumpingEvents = [];
+        $washingEvents = [];
+        $cycles = [];
+
+        foreach ($sessions as $session) {
+            if (count($session) < self::MIN_PUMPS) {
+                array_push($pumpingEvents, ...$session);
+                continue;
+            }
+
+            $quickRepeats = 0;
+            for ($i = 1; $i < count($session); $i++) {
+                if ($session[$i]->x - $session[$i - 1]->x <= self::QUICK_GAP) {
+                    $quickRepeats++;
+                }
+            }
+
+            $first = $session[0];
+            $last = end($session);
+
+            $washingEvents[] = $first;
+            $cycles[] = [
+                'start'        => $first->x,
+                'lastPump'     => $last->x,
+                'estimatedEnd' => $last->x + self::END_OFFSET,
+                'pumps'        => count($session),
+                'heavy'        => $quickRepeats >= self::HEAVY_QUICK_REPEATS,
+            ];
+        }
+
+        return [$pumpingEvents, $washingEvents, $cycles];
     }
 }
