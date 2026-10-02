@@ -225,19 +225,14 @@ class BaseShit {
     protected function getMaxAbsoluteValue($event) {
         // Startup and Healthcheck events have their gryoscopic data overwritten for visual aesthetic
         if ($event->type == self::EVENT_TYPE_STARTUP) {
-            return 11;
+            // arbitrarily this value to tower over pump events in the graph
+            return 5;
         } elseif ($event->type == self::EVENT_TYPE_HEALTHCHECK) {
+            // arbitrarily 1 to be of minimum height
             return 1;
         }
-
-        $maxAbsValue = abs($event->x_value);
-        if (abs($event->y_value) > $maxAbsValue) {
-            $maxAbsValue = abs($event->y_value);
-        }
-        if (abs($event->z_value) > $maxAbsValue) {
-            $maxAbsValue = abs($event->z_value);
-        }
-        return $maxAbsValue;
+        // arbitrarily 2 to be taller than a healthcheck
+        return 2;
     }
 
     protected function numberOfHealthChecksInLastXHours(int $numberOfHours) {

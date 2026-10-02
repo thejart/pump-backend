@@ -146,6 +146,9 @@ class ShitShow extends BaseShit {
             }
  
             $first = $session[0];
+            // Change the magnitude of the washing event to twice the count of pump events per session
+            // ...one pump event has a height of 2, hence the doubling
+            $first->y = 2 * count($session);
             $last = end($session);
  
             $washingEvents[] = $first;
