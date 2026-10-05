@@ -2,9 +2,6 @@
 require_once __DIR__ . '/BaseShit.class.php';
 
 class ShitShow extends BaseShit {
-    const FIFTEEN_MINUTES = 900000; // in milliseconds
-    const THREE_MINUTES = 180000;   // in milliseconds
-
     const BACKGROUND_OPTIONS = [
         self::EVENT_TYPE_STARTUP =>         "rgba(97, 148, 49, 0.4)",   // green
         self::EVENT_TYPE_PUMPING =>         "rgba(139, 69, 19, 0.4)",   // brown
@@ -18,18 +15,12 @@ class ShitShow extends BaseShit {
         self::EVENT_TYPE_HEALTHCHECK =>     "rgb(201, 203, 207)"    // grey
     ];
 
-    /** @var int */
-    protected $viewWindow;
-    /** @var bool */
-    protected $viewDeducedEvents;
-    /** @var string */
-    protected $filename;
-
-
-
     // ->x timestamps are in milliseconds.
     private const SECOND = 1000;
+    const FIFTEEN_MINUTES = 900 * self::SECOND;
+    const THREE_MINUTES = 180 * self::SECOND;
  
+    // The following constants have to do with washing machine pump behavior and detection
     // Pumps less than this far apart belong to the same session.
     // Drain bursts within one wash cycle can be ~20 minutes apart.
     private const SESSION_GAP = 25 * 60 * self::SECOND;
@@ -48,6 +39,12 @@ class ShitShow extends BaseShit {
     // The cycle typically finishes ~10 minutes after the last pump.
     private const END_OFFSET = 10 * 60 * self::SECOND;
 
+    /** @var int */
+    protected $viewWindow;
+    /** @var bool */
+    protected $viewDeducedEvents;
+    /** @var string */
+    protected $filename;
 
     public function __construct($envFile) {
         parent::__construct($envFile);
