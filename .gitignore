@@ -4,3 +4,4 @@ vendor/
 index.html
 .DS_Store
 .phpunit.result.cache
+CLAUDE.md
