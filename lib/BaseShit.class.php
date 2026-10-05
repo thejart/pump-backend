@@ -222,7 +222,7 @@ class BaseShit {
         return $query->fetchAll(PDO::FETCH_OBJ)[0]->count;
     }
 
-    protected function getMaxAbsoluteValue($event) {
+    protected function getGraphHeightBasedOnType($event) {
         // Startup and Healthcheck events have their gryoscopic data overwritten for visual aesthetic
         if ($event->type == self::EVENT_TYPE_STARTUP) {
             // arbitrarily this value to tower over pump events in the graph

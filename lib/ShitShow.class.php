@@ -66,7 +66,7 @@ class ShitShow extends BaseShit {
         foreach ($this->getXDaysOfRecentEvents($this->viewWindow) as $event) {
             $graphedDatum = new stdClass();
             $graphedDatum->x = (int)$event->timestamp;
-            $graphedDatum->y = $this->getMaxAbsoluteValue($event);
+            $graphedDatum->y = $this->getGraphHeightBasedOnType($event);
 
             if ($event->type == self::EVENT_TYPE_STARTUP) {
                 $startupData[] = $graphedDatum;
